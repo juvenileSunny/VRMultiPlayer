@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: c1e53ace373448a4abd0437847562c55
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - slideShowConfig: {fileID: 11400000, guid: 6a363bfd020ead04e851c2a64fe42205, type: 2}
+  - slideImage: {instanceID: 0}
+  - slideTitle: {instanceID: 0}
+  - slideTranscript: {instanceID: 0}
+  - ttsAgent: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

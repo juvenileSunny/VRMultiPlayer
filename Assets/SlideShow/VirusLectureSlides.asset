@@ -1,0 +1,171 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80a1f2cfa0ad20647bab6ee8a4a9b4f8, type: 3}
+  m_Name: VirusLectureSlides
+  m_EditorClassIdentifier: 
+  slides:
+  - title: "Viruses \u2013 Structure, Replication, and Response"
+    content: 'Hi! I am Chris, let''s talk about the virus today.
+
+'
+    slideImage: {fileID: 21300000, guid: 21a7bacac3e66954688de951a496e477, type: 3}
+  - title: Introduction to Viruses
+    content: "Where do infectious diseases come from?\r\nOver 130 years ago, scientists
+      discovered that bacteria weren\u2019t the only culprits\u2014viruses were new,
+      invisible agents.\r\nRussian botanist Ivanovsky found filtered plant sap still
+      caused infection.\r\nBeijerinck coined the word 'virus,' Latin for poison.
+      These agents weren\u2019t alive in the traditional sense, yet they evolved
+      for billions of years.\r\n"
+    slideImage: {fileID: 21300000, guid: 589a92b9ba11e5d4f8359bbec7473d41, type: 3}
+  - title: What Are Viruses?
+    content: 'Viruses aren''t truly alive but share traits with living things.
+
+      They
+      are tiny bundles of nucleic acid (DNA or RNA) in a protein shell (capsid),
+      sometimes wrapped in a viral envelope.
+
+      They evolve, mutate, and infect
+      hosts.
+
+      Think of them as ''genes in a box.''
+
+'
+    slideImage: {fileID: 21300000, guid: 4ffb319e18b024c4d9db56cf41b10608, type: 3}
+  - title: The Origins and Nature of Viruses
+    content: '
+
+      How did viruses begin?
+
+      They may have evolved from rogue
+      genetic material, simplified ancient organisms, or predated cells as self-replicating
+      RNA.
+
+      Regardless, they blur the line between living and non-living.
+
+      They
+      only ''activate'' inside a host.
+
+'
+    slideImage: {fileID: 21300000, guid: 76545c12bdcd3844eb9a3ead06000bab, type: 3}
+  - title: Host Ranges and Zoonotic Viruses
+    content: ' Each virus infects specific hosts. Bacteriophages infect only bacteria,
+      measles only primates. Some like SARS-CoV-2 infect multiple species including
+      humans and deer. Viruses that jump species are called zoonotic. '
+    slideImage: {fileID: 21300000, guid: be8f2c2a76999ac4fb2c5868645c3d68, type: 3}
+  - title: How Viruses Infect and Replicate
+    content: '
+
+      Viruses enter compatible cells and hijack their machinery.
+
+      They
+      reprogram cells to produce viral copies, spreading infection.
+
+      This process
+      disrupts or destroys host cells.
+
+'
+    slideImage: {fileID: 21300000, guid: 45d371d8a81702c46ac37ccf3b48bd4c, type: 3}
+  - title: "Viral Replication \u2013 RNA Virus"
+    content: '
+
+      An RNA virus attaches to a host cell, enters, and releases
+      its RNA.
+
+      The host cell machinery makes viral RNA and proteins.
+
+      New
+      viruses are assembled and exit to infect other cells.
+
+'
+    slideImage: {fileID: 21300000, guid: 29040677aab415547a2dc135a4c6b201, type: 3}
+  - title: Retroviruses and HIV
+    content: '
+
+      Retroviruses convert their RNA into DNA using reverse transcriptase.
+
+      This
+      viral DNA integrates into the host genome.
+
+      HIV infects T cells and weakens
+      the immune system over time.
+
+'
+    slideImage: {fileID: 21300000, guid: bbc64e44d6c288f4fbdf79e902062168, type: 3}
+  - title: Vaccines and Antivirals
+    content: '
+
+      Vaccines train the immune system using harmless parts of the
+      virus.
+
+      Antivirals block entry or replication inside host cells.
+
+      Together,
+      they are powerful defenses against infections.
+
+'
+    slideImage: {fileID: 21300000, guid: 873627b50480ca2498447c3e65d4913b, type: 3}
+  - title: mRNA Vaccines and the Future
+    content: '
+
+      mRNA vaccines teach cells to make harmless spike proteins.
+
+      This
+      trains the immune system to recognize real viruses quickly.
+
+      Used effectively
+      against COVID-19.
+
+'
+    slideImage: {fileID: 21300000, guid: eff2dc718f7cf7f4eb1ef65ae08d6fa8, type: 3}
+  - title: Dr. Abdool Karim and HIV Prevention
+    content: "\r\nDr. Abdool Karim pioneered a gel containing tenofovir to protect
+      women from HIV.\r\nHer work led to a 50% reduction in infections\u2014empowering
+      women with prevention tools.\r\n"
+    slideImage: {fileID: 21300000, guid: 4a0f6ed0a9424c84eb0d427a630277f0, type: 3}
+  - title: How Antivirals Work
+    content: '
+
+      Antivirals block viruses from entering cells or halt replication
+      steps.
+
+      They disrupt enzymes or alert immune defenses.
+
+      They slow
+      infection and reduce symptoms.
+
+'
+    slideImage: {fileID: 21300000, guid: 261ee7da7e8a07a409514a113aaeb43b, type: 3}
+  - title: The Bigger Picture
+    content: '
+
+      Viruses are ancient and evolving.
+
+      Studying them sharpens
+      our defenses.
+
+      Vaccines and antivirals help us protect ourselves and
+      each other.
+
+'
+    slideImage: {fileID: 21300000, guid: 250a9fba4ace60d4cb67e0ec96579017, type: 3}
+  - title: Closing
+    content: '
+
+      Viruses may be simple, but they shape life.
+
+      Understanding
+      them empowers prevention.
+
+      Biology is our greatest ally in this fight.
+
+'
+    slideImage: {fileID: 21300000, guid: 863f70fce6e82fa4f9681dcad963b7fa, type: 3}
