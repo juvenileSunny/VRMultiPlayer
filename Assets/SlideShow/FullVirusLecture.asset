@@ -1,0 +1,297 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80a1f2cfa0ad20647bab6ee8a4a9b4f8, type: 3}
+  m_Name: FullVirusLecture
+  m_EditorClassIdentifier: 
+  slides:
+  - title: 'Part 1. Introduction: Discovering Viruses'
+    content: "Here\u2019s an age-old question: Where do infectious diseases come
+      from?\r\n"
+    slideImage: {fileID: 21300000, guid: 969b03f83f39dfc40bcc0a4a0ae2e63d, type: 3}
+  - title: 'Part 1. Introduction: Discovering Viruses'
+    content: 'Until about 130 years ago, we thought they only came from microscopic
+      organisms like bacteria.
+
+'
+    slideImage: {fileID: 21300000, guid: 0fcc1fc9808f80f42a887b44e9376907, type: 3}
+  - title: 'Part 1. Introduction: Discovering Viruses'
+    content: 'But when a mysterious disease started rotting tobacco plants across
+      Europe, scientists and farmers went looking for the culprit, and found something
+      unexpected.
+
+'
+    slideImage: {fileID: 21300000, guid: e230f41c7fbd239409c0b3cee78862e2, type: 3}
+  - title: 'Part 1. Introduction: Discovering Viruses'
+    content: 'A Russian botanist, Dmitry Ivanovsky, took sap from an infected plant
+      and passed it through a filter designed to strain out bacteria.
+
+      But
+      something strange happened: even without any bacteria, the filtered sap still
+      spread the disease.
+
+'
+    slideImage: {fileID: 21300000, guid: a1f8b510f78f81746a7a5b014c17e3ba, type: 3}
+  - title: 'Part 1. Introduction: Discovering Viruses'
+    content: "It turned out the infection was caused by something different\u2014what
+      was then perceived as a contagious living fluid, not a bacterium at all.\r\nLater,
+      Dutch botanist Martinus Beijerinck gave it a name: virus, from the Latin word
+      for poison.\r\nAnd while viruses aren\u2019t quite alive in the traditional
+      sense, they\u2019ve been growing and evolving alongside life for billions of
+      years.\r\n"
+    slideImage: {fileID: 21300000, guid: e356cad0ccb2c7c4fa47a270633e598a, type: 3}
+  - title: 'Part 2: What We Have in Common with Viruses  '
+    content: "While most scientists wouldn\u2019t classify viruses as alive, they
+      do share quite a few features with living organisms. Like living things, viruses
+      come in a wide variety of shapes and sizes. There are viruses that look like
+      uncooked spaghetti, like Ebola virus; and others like Avian Infectious Bronchitis
+      Virus resemble spiky dog toys; and some even look like miniature spacecraft,
+      such as Schizotequatrovirus. "
+    slideImage: {fileID: 21300000, guid: 03e5d84759f3b8b409843dc63d10afe0, type: 3}
+  - title: 'Part 2: What We Have in Common with Viruses  '
+    content: "But in general, viruses are much smaller and simpler than even the
+      tiniest bacteria. For example, the influenza virus, which causes the seasonal
+      flu, can be 100 to 1,000 times smaller than a human cell. Even the largest
+      \"jumbo\" size viruses are minuscule, barely visible under a light microscope,
+      and they\u2019re much simpler too. Take the bacterium E. coli: it has over
+      4,000 genes. The influenza virus? Just eight. "
+    slideImage: {fileID: 21300000, guid: 85bce9e45e5e3a24d8e5e71a5a472d40, type: 3}
+  - title: 'Part 2: What We Have in Common with Viruses  '
+    content: "And yes\u2014viruses have genes, just like us and all living things.\r\nBut
+      they exist as an infectious bundle of nucleic acids\u2014either DNA or RNA,
+      in single or double strands\u2014wrapped in a protein shell called a capsid.\r\nSometimes,
+      they also have an outer membrane called a viral envelope.\r\nThe word \u201Ccapsid\u201D
+      comes from Latin, meaning box.\r\nSo, you can think of viruses as \u201Cgenes
+      in a box.\u201D\r\n"
+    slideImage: {fileID: 21300000, guid: 9dcb6e66f94f89344ab9099d994c8408, type: 3}
+  - title: 'Part 2: What We Have in Common with Viruses  '
+    content: "Viruses also evolve over time. That\u2019s why your body can build
+      immunity to one virus, but still get infected by a new variant that slips past
+      your defenses.\r\n And if you're still wondering how all of this is possible
+      for something that isn't even alive\u2014well, so are scientists.\r\nWe don\u2019t
+      fully understand it yet. But we do have some pretty good theories.\r\n\r\n"
+    slideImage: {fileID: 21300000, guid: c278f37efa601464792a1e43f26a874d, type: 3}
+  - title: 'Part 3: The Origins and Nature of Viruses '
+    content: "One idea is that viruses arose from genetic material gone rogue\u2014DNA
+      or RNA fragments that developed the ability to escape from cells and move between
+      them.\r\nAfter all, genetic material already leaves the nucleus during protein
+      synthesis.\r\nSo maybe it\u2019s not such a big leap for it to leave the cell
+      entirely.\r\n\r\nAnother theory is that viruses evolved from once-living organisms
+      that went minimalist\u2014they slowly shed complexity and lost genetic information,
+      until they became more life-adjacent than truly alive.\r\n\r\nThere\u2019s
+      also a third idea: that viruses actually predate cells.\r\nAccording to this
+      theory, viruses may have begun as simple, self-replicating RNA molecules, and
+      only evolved to infect cells after the first living organisms appeared.\r\n"
+    slideImage: {fileID: 21300000, guid: 5e36a841544f97f4785afd780cffb371, type: 3}
+  - title: 'Part 3: The Origins and Nature of Viruses '
+    content: "Here's something to remember: The categories of \u201Cliving\u201D
+      and \u201Cnon-living\u201D are just that\u2014concepts.\r\n"
+    slideImage: {fileID: 21300000, guid: 7f5523388e624f84580e0f572307a873, type: 3}
+  - title: 'Part 3: The Origins and Nature of Viruses '
+    content: "We try to fit the complicated world into neat little bins because it
+      serves to make complexity easier to manage, but the natural world isn\u2019t
+      always so easily defined. \r\nBut the natural world doesn\u2019t always fit
+      neatly into those boxes.\r\nWe still don\u2019t know exactly how viruses evolved
+      in relation to life.\r\n\r\n\r\nWhat we do know is this:\r\nViruses can\u2019t
+      reproduce, grow, process energy, or do anything that resembles living\u2014on
+      their own.\r\nOnly when they bump into and infect the right kind of cell\u2014called
+      a host\u2014can viruses spring into action.\r\n \r\n"
+    slideImage: {fileID: 21300000, guid: 3dced499f9d5ab045b153e8920d654b3, type: 3}
+  - title: 'Part 4: Hosts & Infection '
+    content: 'Each type of virus can only infect a specific range of hosts.
+
+      For
+      example, some viruses are incredibly selective, like bacteriophages, which
+      only infect bacteria.
+
+'
+    slideImage: {fileID: 21300000, guid: 6b2d63a16116da5458e1eb29c40a6409, type: 3}
+  - title: 'Part 4: Hosts & Infection '
+    content: "Or consider the virus that causes measles\u2014it only infects primates,
+      including humans.\r\n"
+    slideImage: {fileID: 21300000, guid: 79293c66a16a087429690ca7472a65d0, type: 3}
+  - title: 'Part 4: Hosts & Infection '
+    content: "But not all viruses are limited to closely related species.\r\nTake
+      SARS-CoV-2, the virus responsible for COVID-19.\r\n It\u2019s been shown to
+      infect humans, hamsters, white-tailed deer, and more.\r\nWhen viruses have
+      the ability to infect both people and animals, we refer to them as zoonotic
+      diseases.\r\n"
+    slideImage: {fileID: 21300000, guid: cef4a98ec6624ec4cac9c7930945cf61, type: 3}
+  - title: 'Part 5: How Viruses Infect and Replicate '
+    content: "When a virus bumps into a cell that it's capable of infecting, things
+      can escalate quickly.\r\nIt enters the cell and takes over, hijacking the cell\u2019s
+      molecular machinery\u2014the very systems that keep the cell alive.\r\nThe
+      virus reprograms the cell to make copies of itself, so it can spread to more
+      and more cells.\r\nThis process is what we mean when we talk about a viral
+      infection:\r\n One cell gets taken over... then another... and another.\r\nIf
+      a large number of cells fall under the virus's control, it can spread incredibly
+      fast.\r\nAnd while there\u2019s more than one way a virus can hijack a cell,
+      many viruses you\u2019ve probably heard of\u2014like polio, measles, mumps,
+      and the common cold\u2014all follow a similar replication strategy.\r\n \r\n"
+    slideImage: {fileID: 21300000, guid: 7e0334e5aed584c449dcb5fc36dea59a, type: 3}
+  - title: 'Part 5: How Viruses Infect and Replicate '
+    content: "Let\u2019s take a closer look at a typical RNA virus in action.\r\nImagine
+      it floating through the body in its spiked outer envelope.\r\n On its own,
+      it can\u2019t do much\u2014just drift around.\r\nBut when it encounters a compatible
+      host cell, everything changes.\r\nOne of the virus\u2019s spikes latches onto
+      a specific receptor on the cell\u2019s surface.\r\n This pulls the virus close
+      enough to the cell membrane for the two to fuse together.\r\nOnce that happens,
+      the virus enters the cell and makes itself at home.\r\n"
+    slideImage: {fileID: 21300000, guid: 843b5103fe5eca34d92e50dc03c673e2, type: 3}
+  - title: 'Part 5: How Viruses Infect and Replicate '
+    content: "It quickly sheds its capsid\u2014the inner protein coat\u2014exposing
+      a single strand of RNA that contains clear instructions: Replicate.\r\nA special
+      viral enzyme hijacks the cell\u2019s energy and protein-making machinery, commanding
+      it to make multiple copies of the viral RNA strands.\r\n"
+    slideImage: {fileID: 21300000, guid: 4a96edf2efe52e447910aa76dd8a63de, type: 3}
+  - title: 'Part 5: How Viruses Infect and Replicate '
+    content: "Some of those RNA copies act as messenger RNA, which the host cell
+      translates into viral proteins. These new proteins wrap around the other RNA
+      strands, forming new capsids\u2014the cores of brand-new viral particles. Then,
+      the new viruses exit the cell.  They shroud themselves in pieces of the cell\u2019s
+      own membrane, shaping it into their spiked outer envelopes. And just like that,
+      they drift away, ready to infect more host cells. This kind of cellular takeover
+      is how most RNA viruses replicate and spread.  And by the time replication
+      is done, the virus has often disrupted or destroyed normal cellular functions\u2014harming
+      or even killing the host cell.   "
+    slideImage: {fileID: 21300000, guid: 930c08a93bd9cce4aac27592d07caf17, type: 3}
+  - title: 'Part 6: Retroviruses and HIV '
+    content: "So yeah\u2026 I\u2019m just gonna say it\u2014viruses are kind of rude,
+      right?\r\nWhat we\u2019ve seen so far is typical behavior for an RNA virus,
+      but there\u2019s another kind of virus that takes things even further.\r\nIt\u2019s
+      called a retrovirus.\r\n"
+    slideImage: {fileID: 21300000, guid: 53055862a5a7a3744b4d924112408ac2, type: 3}
+  - title: 'Part 6: Retroviruses and HIV '
+    content: After a retrovirus enters a host cell, its RNA is converted into DNA. 
+      This transformation is made possible by a special enzyme called reverse transcriptase.
+    slideImage: {fileID: 21300000, guid: f84100177ee6a2a47a0aa629cdfb9084, type: 3}
+  - title: 'Part 6: Retroviruses and HIV '
+    content: "That new viral DNA is then inserted into the host\u2019s own DNA, effectively
+      becoming part of it."
+    slideImage: {fileID: 21300000, guid: 330c7902f4540d44d8dfe8dfba27b97c, type: 3}
+  - title: 'Part 6: Retroviruses and HIV '
+    content: "In fact, about 8 to 10 percent of the human genome contains fragments
+      of ancient viral DNA\u2014left behind by infections that occurred in the reproductive
+      cells of our ancestors, and then passed down to us.\r\nThese fragments don\u2019t
+      behave like active viruses.\r\n Some have even evolved into helpful genes.\r\n"
+    slideImage: {fileID: 21300000, guid: ff5ce6a391ec6ed44b4702361936c535, type: 3}
+  - title: 'Part 6: Retroviruses and HIV '
+    content: "But not all retroviruses are harmless.\r\nTake HIV, the virus that
+      causes AIDS. It\u2019s a serious example of a retrovirus.\r\nHIV spreads through
+      direct contact with certain infected bodily fluids, such as:\r\nBlood\r\nSemen\r\nVaginal
+      fluids\r\nBreast milk\r\nOnce inside the body, HIV infects T cells\u2014a key
+      part of the immune system.\r\n"
+    slideImage: {fileID: 21300000, guid: 47ae5c9806bed084c99c0f297cd2a30e, type: 3}
+  - title: 'Part 6: Retroviruses and HIV '
+    content: "After entering a T cell, the HIV DNA merges with the host\u2019s DNA
+      and can lie dormant for years\u2014sometimes more than a decade\u2014without
+      being noticed.\r\nEventually, it activates, transcribing back into RNA, creating
+      new HIV particles, and spreading to other T cells.\r\nEach time it spreads,
+      HIV kills the host cell, and since T cells are crucial for fighting infections,
+      their destruction weakens the entire immune system over time.\r\n"
+    slideImage: {fileID: 21300000, guid: ed919d88a2b2b1a4a9ab64111d4146d3, type: 3}
+  - title: 'Part 7: Vaccines and Antivirals '
+    content: "The good news is\u2014we\u2019ve come a long way since Beijerinck first
+      identified his \u201Ccontagious living fluid\u201D as a virus. Today, we have
+      two powerful ways to fight back against viral invaders: Vaccines And antivirals
+      Let\u2019s start with vaccines.  They\u2019re absolutely central to our defense
+      system. If a virus is an invader, and your immune system is an army, then a
+      vaccine is boot camp\u2014a training program that lets your body practice fighting
+      the virus before a real attack ever happens. See, viruses are sneaky. They
+      can travel virtually undetected, and until your immune cells actually meet
+      one, they have no idea how to recognize it. That puts your body at a disadvantage. "
+    slideImage: {fileID: 21300000, guid: 43ae3bf48de5acf4ea9dcc142dcd873d, type: 3}
+  - title: 'Part 7: Vaccines and Antivirals '
+    content: "But with a vaccine, your immune system gets to learn early.\r\n Vaccines
+      introduce your body to safe parts of the virus\u2014like:\r\nJust the protein
+      shell (the capsid),\r\nOr a very weak or inactive version of the virus.\r\nThese
+      components can\u2019t replicate or spread, but they\u2019re perfect for target
+      practice.\r\n \r\n"
+    slideImage: {fileID: 21300000, guid: 89c3bc8232125fb40a3f91c169c36a07, type: 3}
+  - title: 'Part 7: Vaccines and Antivirals '
+    content: "More recently, vaccines have been especially successful in battling
+      COVID-19, thanks to an exciting new approach: messenger RNA, or mRNA. An mRNA
+      vaccine carries a small set of genetic instructions that teach your cells how
+      to make just one piece of the virus\u2014its spike protein. Remember, that
+      spike protein acts like a key\u2014it\u2019s what the virus uses to unlock
+      and enter your cells. When the vaccine is injected, your cells follow the instructions
+      and make this spike protein. It\u2019s harmless by itself, but it gives your
+      immune system something to practice on.  This training helps your body recognize
+      and respond quickly if the real virus ever shows up. And while we don\u2019t
+      yet have a vaccine to prevent HIV, there\u2019s still another powerful defender
+      stepping up to help fight this deadly virus. "
+    slideImage: {fileID: 21300000, guid: 4851b9da7c7b23b4e8270610309adb5f, type: 3}
+  - title: 'Part 7: Vaccines and Antivirals '
+    content: "Let\u2019s learn a little more in what I like to call the Theater of
+      Life.\r\nIn the 1990s, HIV infections were rising in South Africa. \r\n\r\n"
+    slideImage: {fileID: 21300000, guid: acb2bdb3862da594d9cba9db43a89ea5, type: 3}
+  - title: 'Part 7: Vaccines and Antivirals '
+    content: 'And epidemiologist Dr. Quarraisha Abdool Karim wanted to understand
+      how and why. She visited rural communities, where she made a key observation: '
+    slideImage: {fileID: 21300000, guid: 67c935f73ac6db246a467eaf6de330d8, type: 3}
+  - title: 'Part 7: Vaccines and Antivirals '
+    content: "That is, women had no reliable method to protect themselves from HIV\u2014especially
+      when they couldn\u2019t control their partners\u2019 behavior. Dr. Abdool Karim
+      wondered: what if there were a form of protection that women could control
+      on their own? "
+    slideImage: {fileID: 21300000, guid: 9d69e02e23404dd429993b8839b41448, type: 3}
+  - title: 'Part 7: Vaccines and Antivirals '
+    content: "She knew about gels called microbicides, which are sometimes used to
+      protect against other infections.\r\n So she asked: could a microbicide gel
+      be developed to prevent HIV transmission?\r\nShe pursued this idea for nearly
+      two decades.\r\n"
+    slideImage: {fileID: 21300000, guid: ea6201602b9f96a4c852e1fda38d46da, type: 3}
+  - title: 'Part 7: Vaccines and Antivirals '
+    content: "After two early candidates failed, in 2010, she and her team completed
+      a three-year trial in South Africa, testing a third option: a gel containing
+      the antiviral drug tenofovir. And this time\u2014it worked. "
+    slideImage: {fileID: 21300000, guid: 7fb8058436e919f40b21177c68e1362b, type: 3}
+  - title: 'Part 7: Vaccines and Antivirals '
+    content: "When used regularly by women before and after sex, the tenofovir gel
+      reduced HIV infections by 50%. This was a powerful breakthrough. It gave women
+      a method of prevention they could control\u2014a life-changing form of autonomy
+      and protection. By starting with the needs of the community, Dr. Abdool Karim
+      showed how science can serve people first, using the right tools to solve the
+      right problems. "
+    slideImage: {fileID: 21300000, guid: 03fa7a3ea5b00df418a59e91a136899d, type: 3}
+  - title: 'Part 8: How Antivirals Work'
+    content: "The gel that Dr. Abdool Karim helped develop is a type of antiviral
+      medication.\r\nAntivirals help battle viral infections once they\u2019ve begun.\r\nBut
+      instead of killing viruses directly, they exploit their biggest weakness:\r\n
+      Viruses can\u2019t reproduce without a host cell.\r\n"
+    slideImage: {fileID: 21300000, guid: 7feb56b8bd39536479569f5507a9bfdb, type: 3}
+  - title: 'Part 8: How Antivirals Work'
+    content: "Some antivirals work by blocking the virus from entering cells\u2014they
+      act like molecular barricades.\r\nOthers work inside the cell, interfering
+      with critical steps in the virus\u2019s replication cycle:\r\nSome disrupt
+      key enzymes, so that viral copies never finish forming.\r\nOthers stimulate
+      the immune system, prompting it to release signaling proteins that put surrounding
+      cells on high alert\u2014ready to defend against invasion.\r\nThese strategies
+      don\u2019t eliminate viruses instantly, but they buy time, slow the spread,
+      and reduce the severity of infections.\r\n"
+    slideImage: {fileID: 21300000, guid: 4b99c69db4437b340ac9a6e913e9ce1c, type: 3}
+  - title: 'Part 8: How Antivirals Work'
+    content: "Together, vaccines and antivirals represent some of the most powerful
+      tools modern science has given us to combat viruses. They may just be \u201Cgenes
+      in a box\u201D, but viruses have been entwined with life for billions of years.
+      They\u2019re ancient, constantly evolving, and new ones are still emerging\u2014as
+      we\u2019ve seen with COVID-19. But the more we study them\u2026  The more we
+      understand their strategies\u2026  The more finely tuned our defenses become.
+      And that means we can do a better job of protecting ourselves\u2014and each
+      other. "
+    slideImage: {fileID: 21300000, guid: cbaae17669af30b4aa28cdfe66025963, type: 3}
+  - title: 'Part 8: How Antivirals Work'
+    content: "Viruses are simple in structure, yet powerful in impact\u2014hijacking
+      cells, evolving rapidly, and shaping the course of life. But by uncovering
+      how they work, where they come from, and how they spread, we\u2019ve learned
+      to fight back\u2014with understanding, with prevention, and with tools grounded
+      in biology itself.  "
+    slideImage: {fileID: 21300000, guid: 65827461518b5db4d92c0bc57c9ea2b2, type: 3}

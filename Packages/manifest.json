@@ -23,6 +23,7 @@
     "com.unity.xr.interaction.toolkit": "3.1.2",
     "com.unity.xr.management": "4.5.2",
     "com.unity.xr.openxr": "1.14.3",
+    "com.whisper.unity": "https://github.com/Macoron/whisper.unity.git?path=/Packages/com.whisper.unity",
     "com.yagizeraslan.deepseek": "https://github.com/yagizeraslan/DeepSeek-Unity.git",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80a1f2cfa0ad20647bab6ee8a4a9b4f8, type: 3}
+  m_Name: MindMapTutorialSlide
+  m_EditorClassIdentifier: 
+  slides:
+  - title: Mind Map
+    content: "Tutorial Mind-Map Mini-Task (Very Basic \u2013 Air / Water / Ice)\r\n\r\nShow
+      this short passage \r\n\r\n\u201CAir, water, and ice are the same substance
+      in different forms.\r\nAir here means water vapor (gas), water is liquid, and
+      ice is solid.\r\nWhen it gets warmer, water can evaporate into air; when it
+      cools, air can condense into water.\r\nWater can freeze into ice, and ice can
+      melt back into water.\u201D\r\n\r\nInstruction for Mind-map activity\r\nCreate
+      3 nodes named Air, Water, Ice.\r\nLink the nodes with directional relationships
+      and link labels:\r\nWater \u2192 Air (\u201Cevaporate\u201D / \u201Cheat\u201D)\r\nAir
+      \u2192 Water (\u201Ccondense\u201D / \u201Ccool\u201D)\r\nWater \u2192 Ice
+      (\u201Cfreeze\u201D / \u201Ccool\u201D)\r\nIce \u2192 Water (\u201Cmelt\u201D
+      / \u201Cheat\u201D)\r\nLabel each node with additional information (e.g., gas
+      / liquid / solid).\r\nChange the color of at least one node (e.g., Air=yellow,
+      Water=blue, Ice=white).\r\nAttach one icon/image to any node (suggested pack:
+      cloud, droplet, snowflake, sun/thermometer)\nUndo your last action (to confirm
+      the undo tool works).\r\n\r\nDev note: keep this in the tutorial only; use
+      a tiny neutral icon set (cloud/droplet/snowflake/sun/thermometer). This satisfies
+      create/link/label/color/image/undo with minimal cognitive load.\r\n"
+    slideImage: {fileID: 21300000, guid: 21a7bacac3e66954688de951a496e477, type: 3}

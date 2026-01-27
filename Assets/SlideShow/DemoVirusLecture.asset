@@ -1,0 +1,81 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80a1f2cfa0ad20647bab6ee8a4a9b4f8, type: 3}
+  m_Name: DemoVirusLecture
+  m_EditorClassIdentifier: 
+  slides:
+  - title: 'Part 1. Introduction: Discovering Viruses'
+    content: "Here\u2019s an age-old question: Where do infectious diseases come
+      from?\r\n"
+    slideImage: {fileID: 21300000, guid: 969b03f83f39dfc40bcc0a4a0ae2e63d, type: 3}
+  - title: 'Part 1. Introduction: Discovering Viruses'
+    content: 'Until about 130 years ago, we thought they only came from microscopic
+      organisms like bacteria.
+
+'
+    slideImage: {fileID: 21300000, guid: 0fcc1fc9808f80f42a887b44e9376907, type: 3}
+  - title: 'Part 1. Introduction: Discovering Viruses'
+    content: 'But when a mysterious disease started rotting tobacco plants across
+      Europe, scientists and farmers went looking for the culprit, and found something
+      unexpected.
+
+'
+    slideImage: {fileID: 21300000, guid: e230f41c7fbd239409c0b3cee78862e2, type: 3}
+  - title: 'Part 1. Introduction: Discovering Viruses'
+    content: 'A Russian botanist, Dmitry Ivanovsky, took sap from an infected plant
+      and passed it through a filter designed to strain out bacteria.
+
+      But
+      something strange happened: even without any bacteria, the filtered sap still
+      spread the disease.
+
+'
+    slideImage: {fileID: 21300000, guid: a1f8b510f78f81746a7a5b014c17e3ba, type: 3}
+  - title: 'Part 1. Introduction: Discovering Viruses'
+    content: "It turned out the infection was caused by something different\u2014what
+      was then perceived as a contagious living fluid, not a bacterium at all.\r\nLater,
+      Dutch botanist Martinus Beijerinck gave it a name: virus, from the Latin word
+      for poison.\r\nAnd while viruses aren\u2019t quite alive in the traditional
+      sense, they\u2019ve been growing and evolving alongside life for billions of
+      years.\r\n"
+    slideImage: {fileID: 21300000, guid: e356cad0ccb2c7c4fa47a270633e598a, type: 3}
+  - title: 'Part 2: What We Have in Common with Viruses  '
+    content: "While most scientists wouldn\u2019t classify viruses as alive, they
+      do share quite a few features with living organisms. Like living things, viruses
+      come in a wide variety of shapes and sizes. There are viruses that look like
+      uncooked spaghetti, like Ebola virus; and others like Avian Infectious Bronchitis
+      Virus resemble spiky dog toys; and some even look like miniature spacecraft,
+      such as Schizotequatrovirus. "
+    slideImage: {fileID: 21300000, guid: 03e5d84759f3b8b409843dc63d10afe0, type: 3}
+  - title: 'Part 2: What We Have in Common with Viruses  '
+    content: "But in general, viruses are much smaller and simpler than even the
+      tiniest bacteria. For example, the influenza virus, which causes the seasonal
+      flu, can be 100 to 1,000 times smaller than a human cell. Even the largest
+      \"jumbo\" size viruses are minuscule, barely visible under a light microscope,
+      and they\u2019re much simpler too. Take the bacterium E. coli: it has over
+      4,000 genes. The influenza virus? Just eight. "
+    slideImage: {fileID: 21300000, guid: 85bce9e45e5e3a24d8e5e71a5a472d40, type: 3}
+  - title: 'Part 2: What We Have in Common with Viruses  '
+    content: "And yes\u2014viruses have genes, just like us and all living things.\r\nBut
+      they exist as an infectious bundle of nucleic acids\u2014either DNA or RNA,
+      in single or double strands\u2014wrapped in a protein shell called a capsid.\r\nSometimes,
+      they also have an outer membrane called a viral envelope.\r\nThe word \u201Ccapsid\u201D
+      comes from Latin, meaning box.\r\nSo, you can think of viruses as \u201Cgenes
+      in a box.\u201D\r\n"
+    slideImage: {fileID: 21300000, guid: 9dcb6e66f94f89344ab9099d994c8408, type: 3}
+  - title: 'Part 2: What We Have in Common with Viruses  '
+    content: "Viruses also evolve over time. That\u2019s why your body can build
+      immunity to one virus, but still get infected by a new variant that slips past
+      your defenses.\r\n And if you're still wondering how all of this is possible
+      for something that isn't even alive\u2014well, so are scientists.\r\nWe don\u2019t
+      fully understand it yet. But we do have some pretty good theories.\r\n\r\n"
+    slideImage: {fileID: 21300000, guid: c278f37efa601464792a1e43f26a874d, type: 3}
