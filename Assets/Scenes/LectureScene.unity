@@ -85278,12 +85278,12 @@ MonoBehaviour:
   audioSource: {fileID: 1619869982}
   rigTargets:
   - target: {fileID: 1751858440}
-    maxX: 0
-    maxY: 0
-    maxZ: 0
-    rotX: 0
-    rotY: 0
-    rotZ: 0
+    maxX: 50
+    maxY: 50
+    maxZ: 50
+    rotX: 20
+    rotY: 20
+    rotZ: 20
     sensitivity: 0
     randomJitter: 0
     directionChangeSpeed: 0
