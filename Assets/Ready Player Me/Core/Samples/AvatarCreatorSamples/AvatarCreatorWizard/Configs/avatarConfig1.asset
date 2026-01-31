@@ -65,3 +65,6 @@ MonoBehaviour:
   - mouthSmile
   - eyeBlinkLeft
   - eyeBlinkRight
+  - mouthOpen
+  - jawOpen
+  - cheekPuff
