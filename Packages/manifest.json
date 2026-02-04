@@ -2,7 +2,7 @@
   "dependencies": {
     "com.srcnalt.openai-unity": "https://github.com/srcnalt/OpenAI-Unity.git",
     "com.unity.animation.rigging": "1.2.1",
-    "com.unity.burst": "1.8.25",
+    "com.unity.burst": "1.8.28",
     "com.unity.cloud.gltfast": "6.0.1",
     "com.unity.collab-proxy": "2.11.3",
     "com.unity.feature.development": "1.0.1",
