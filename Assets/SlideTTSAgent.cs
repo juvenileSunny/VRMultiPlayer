@@ -33,6 +33,7 @@ public class SlideTTSAgent : MonoBehaviour
     private float[] _sampleData = new float[1024];
 
     public bool IsSpeaking => audioSource != null && audioSource.isPlaying;
+    public bool endOfSpeech => _speakRoutine == null;
 
     void Start()
     {

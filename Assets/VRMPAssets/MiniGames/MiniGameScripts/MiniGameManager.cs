@@ -288,7 +288,7 @@ namespace XRMultiplayer.MiniGames
 
             ResetContestants(false);
 
-            m_GameStateText.text = "Pre Game";
+            m_GameStateText.text = "Pre Session";
 
             m_DynamicButton.UpdateButton(AddLocalPlayer, "Join");
             StartCoroutine(ResetReadyZones());
@@ -314,12 +314,12 @@ namespace XRMultiplayer.MiniGames
                 trigger.subTriggerCollider.enabled = false;
             }
 
-            m_GameStateText.text = "In Progess";
+            m_GameStateText.text = "Session In Progess";
 
             if (LocalPlayerInGame)
             {
                 m_DynamicButton.button.interactable = true;
-                PlayerHudNotification.Instance.ShowText($"Game Started!");
+                PlayerHudNotification.Instance.ShowText($"Session Started!");
                 ToggleShrink(true);
                 if (!m_UseInGameOffset)
                 {
@@ -347,7 +347,7 @@ namespace XRMultiplayer.MiniGames
             m_LocalPlayerInGame = false;
             m_TeleportZonesObject.SetActive(false);
             SortPlayers();
-            m_GameStateText.text = "Post Game";
+            m_GameStateText.text = "Post Session";
             m_DynamicButton.UpdateButton(ResetGame, $"Wait", true, false);
             if (!currentMiniGame.finished)
             {
@@ -368,7 +368,7 @@ namespace XRMultiplayer.MiniGames
         IEnumerator PostGameRoutine()
         {
             yield return new WaitForSeconds(m_PostGameWaitTimeInSeconds);
-            m_GameStateText.text = "Next Game in";
+            m_GameStateText.text = "Next Session in";
             for (int i = m_PostGameCountdownTimeInSeconds; i > 0; i--)
             {
                 m_DynamicButton.UpdateButton(ResetGame, $"{i}", true, false);
@@ -451,9 +451,9 @@ namespace XRMultiplayer.MiniGames
 
                 if (LocalPlayerInGame)
                 {
-                    PlayerHudNotification.Instance.ShowText("Game Start Cancelled");
+                    PlayerHudNotification.Instance.ShowText("Session Start Cancelled");
                 }
-                m_GameStateText.text = "Pre Game";
+                m_GameStateText.text = "Pre Session";
             }
             else
             {
@@ -470,7 +470,7 @@ namespace XRMultiplayer.MiniGames
         {
             for (int i = countdownTime; i > 0; i--)
             {
-                m_GameStateText.text = $"Game Starting In {i}";
+                m_GameStateText.text = $"Session Starting In {i}";
 
                 if (LocalPlayerInGame)
                 {
@@ -479,7 +479,7 @@ namespace XRMultiplayer.MiniGames
                 yield return new WaitForSeconds(1);
             }
 
-            m_GameStateText.text = $"Game Starting Now!";
+            m_GameStateText.text = $"Session Starting Now!";
 
             if (IsServer)
             {

@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80a1f2cfa0ad20647bab6ee8a4a9b4f8, type: 3}
+  m_Name: SingleVirusLecture
+  m_EditorClassIdentifier: 
+  slides:
+  - title: 'Part 1. Introduction: Discovering Viruses'
+    content: "Here\u2019s an age-old question: Where do infectious diseases come
+      from?\r\n"
+    slideImage: {fileID: 21300000, guid: 969b03f83f39dfc40bcc0a4a0ae2e63d, type: 3}
+  - title: 'Part 1. Introduction: Discovering Viruses'
+    content: 'Until about 130 years ago, we thought they only came from microscopic
+      organisms like bacteria.
+
+'
+    slideImage: {fileID: 21300000, guid: 0fcc1fc9808f80f42a887b44e9376907, type: 3}
+  - title: 'Part 1. Introduction: Discovering Viruses'
+    content: 'But when a mysterious disease started rotting tobacco plants across
+      Europe, scientists and farmers went looking for the culprit, and found something
+      unexpected.
+
+'
+    slideImage: {fileID: 21300000, guid: e230f41c7fbd239409c0b3cee78862e2, type: 3}
