@@ -62,22 +62,18 @@ namespace XRMultiplayer.MiniGames
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.CompareTag("Player"))
+            if (other.CompareTag("Player") && !alertTriggered)
             {
-                Debug.Log($"Player triggered alert zone - session in progress");
-                if (alertTriggerCollider.bounds.Intersects(other.bounds) && !alertTriggered)
-                {
-                    alertTriggered = true;
-                    ShowAlertMessage();
-                    Invoke(nameof(HideAlertMessage), 3f);
-                }
+                Debug.Log("Player collided with alert trigger");
+                alertTriggered = true;
+                ShowAlertMessage();
+                Invoke(nameof(HideAlertMessage), 3f);
             }
         }
 
-
         private void ShowAlertMessage()
         {
-            Debug.Log($"Player triggered alert zone - session in progress");
+            Debug.Log("Player triggered alert zone - session in progress");
             PlayerHudNotification.Instance.ShowText("Please finish the current session before starting the next one!");
         }
 
@@ -85,6 +81,7 @@ namespace XRMultiplayer.MiniGames
         {
             alertTriggered = false;
         }
+
 
 
         private IEnumerator DelayedActivation()
