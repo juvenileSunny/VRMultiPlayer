@@ -588,6 +588,8 @@ namespace XRMultiplayer.MiniGames
                 ToggleShrink(false);
             }
             StartCoroutine(TeleportAfterFinish());
+
+            
         }
 
         IEnumerator TeleportAfterFinish()
