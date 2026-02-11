@@ -86478,7 +86478,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0714636f6fbd4e8469d79962306a47e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ttsUrl: http://127.0.0.1:5005/tts
+  ttsUrl: http://10.0.0.146:5005/tts
   audioSource: {fileID: 1619869982}
   blendShapeTargets:
   - skinnedMesh: {fileID: 5587224176858103542}

@@ -15,7 +15,7 @@ public class BlendShapeTarget
 public class SlideTTSAgent : MonoBehaviour
 {
     [Header("TTS HTTP Endpoint")]
-    public string ttsUrl = "http://127.0.0.1:5005/tts";
+    public string ttsUrl = "https://127.0.0.1:5005/tts";
 
     [Header("Audio")]
     public AudioSource audioSource;
