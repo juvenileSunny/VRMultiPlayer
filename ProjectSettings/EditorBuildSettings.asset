@@ -5,12 +5,9 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/FinalMindMapScene.unity
-    guid: 13f6f87036926f94ab0417ca1b31725c
-  - enabled: 0
-    path: Assets/Scenes/BasicScene.unity
-    guid: bc761d9a86b33554f85fd11bb1f87ba3
+  - enabled: 1
+    path: Assets/Scenes/MindMap_XR_Tutorial.unity
+    guid: 643d16a149d604a4fb6f8ad08ebb54a7
   - enabled: 1
     path: Assets/FinalLectureScene.unity
     guid: e613a408e552a234f90702693762cb41
