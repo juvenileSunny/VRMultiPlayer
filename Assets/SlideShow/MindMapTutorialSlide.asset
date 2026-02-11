@@ -31,4 +31,4 @@ MonoBehaviour:
       the undo tool works).\r\n\r\nDev note: keep this in the tutorial only; use
       a tiny neutral icon set (cloud/droplet/snowflake/sun/thermometer). This satisfies
       create/link/label/color/image/undo with minimal cognitive load.\r\n"
-    slideImage: {fileID: 21300000, guid: 21a7bacac3e66954688de951a496e477, type: 3}
+    slideImage: {fileID: 21300000, guid: c131005edfd5cf3439a8ea4a5f3e8789, type: 3}
