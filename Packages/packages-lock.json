@@ -1,5 +1,14 @@
 {
   "dependencies": {
+    "com.eac.dataecho.logger": {
+      "version": "https://github.com/eac-basu-lab/dataecho-unity-plugin.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "3.2.1"
+      },
+      "hash": "39b7174a468fe69cfc73ed58b3086a8eee094806"
+    },
     "com.srcnalt.openai-unity": {
       "version": "https://github.com/srcnalt/OpenAI-Unity.git",
       "depth": 0,

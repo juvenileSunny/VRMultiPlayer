@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.eac.dataecho.logger": "https://github.com/eac-basu-lab/dataecho-unity-plugin.git",
     "com.srcnalt.openai-unity": "https://github.com/srcnalt/OpenAI-Unity.git",
     "com.unity.animation.rigging": "1.2.1",
     "com.unity.burst": "1.8.28",
