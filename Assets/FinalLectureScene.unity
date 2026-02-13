@@ -60438,7 +60438,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1075727043}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d1a6b5a2633e42449878c2a5aff26812, type: 3}
   m_Name: 
@@ -86067,7 +86067,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0714636f6fbd4e8469d79962306a47e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ttsUrl: http://127.0.0.1:5005/tts
+  ttsUrl: http://arsc-r-2wm6yb4.ddns.uark.edu:5005/tts
   audioSource: {fileID: 1619869982}
   blendShapeTargets:
   - skinnedMesh: {fileID: 5587224176858103542}
@@ -95002,7 +95002,7 @@ MonoBehaviour:
   m_GameLength: 960
   m_GameInteractables: []
   activationDelaySecondsOnPlayerCount: 5
-  minPlayersToActivate: 2
+  minPlayersToActivate: 1
   teleportStartAreas:
   - {fileID: 5926013891304973355}
   - {fileID: 2946942918216858342}
@@ -102708,7 +102708,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1e53ace373448a4abd0437847562c55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slideShowConfig: {fileID: 11400000, guid: 11dde91a78f585d4f9650df178ea0680, type: 2}
+  slideShowConfig: {fileID: 11400000, guid: 1619cbe8eef674d479c332e18b69bdf3, type: 2}
   slideImage: {fileID: 1437250626}
   slideTitle: {fileID: 1122948936}
   slideTranscript: {fileID: 1065670033}
