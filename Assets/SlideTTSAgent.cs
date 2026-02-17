@@ -15,17 +15,15 @@ public class BlendShapeTarget
 public class SlideTTSAgent : MonoBehaviour
 {
     [Header("TTS HTTP Endpoint")]
-    public string ttsUrl = "https://127.0.0.1:5005/tts";
+    public string ttsUrl = "http://127.0.0.1:5005/tts";
 
     [Header("Audio")]
     public AudioSource audioSource;
 
     [Header("Avatar Blendshapes")]
-    [Tooltip("Drag & drop all SkinnedMeshRenderers here.")]
     public List<BlendShapeTarget> blendShapeTargets = new List<BlendShapeTarget>();
 
     [Header("Advanced")]
-    public string authorizationHeader;
     public bool interruptOnNewSpeak = true;
     public int requestTimeoutSeconds = 30;
 
@@ -37,16 +35,16 @@ public class SlideTTSAgent : MonoBehaviour
 
     void Start()
     {
-        // Pre-cache blendshape indices
+        // Cache blendshape indices
         foreach (var target in blendShapeTargets)
         {
             if (target.skinnedMesh != null && !string.IsNullOrEmpty(target.blendShapeName))
             {
-                target.blendShapeIndex = target.skinnedMesh.sharedMesh.GetBlendShapeIndex(target.blendShapeName);
+                target.blendShapeIndex =
+                    target.skinnedMesh.sharedMesh.GetBlendShapeIndex(target.blendShapeName);
+
                 if (target.blendShapeIndex == -1)
-                {
-                    Debug.LogWarning($"[SlideTTSAgent] BlendShape '{target.blendShapeName}' not found on {target.skinnedMesh.name}");
-                }
+                    Debug.LogWarning($"BlendShape '{target.blendShapeName}' not found on {target.skinnedMesh.name}");
             }
         }
     }
@@ -63,11 +61,11 @@ public class SlideTTSAgent : MonoBehaviour
     float GetCurrentAmplitude()
     {
         audioSource.GetOutputData(_sampleData, 0);
+
         float sum = 0f;
         for (int i = 0; i < _sampleData.Length; i++)
-        {
             sum += _sampleData[i] * _sampleData[i];
-        }
+
         return Mathf.Clamp01(Mathf.Sqrt(sum / _sampleData.Length) * 10f);
     }
 
@@ -75,7 +73,9 @@ public class SlideTTSAgent : MonoBehaviour
     {
         foreach (var target in blendShapeTargets)
         {
-            if (target.skinnedMesh == null || target.blendShapeIndex == -1) continue;
+            if (target.skinnedMesh == null || target.blendShapeIndex == -1)
+                continue;
+
             float weight = amplitude * target.maxWeight * 100f;
             target.skinnedMesh.SetBlendShapeWeight(target.blendShapeIndex, weight);
         }
@@ -83,12 +83,16 @@ public class SlideTTSAgent : MonoBehaviour
 
     public void Speak(string text)
     {
-        if (string.IsNullOrWhiteSpace(text)) return;
+        Debug.Log("TTS Requested: " + text);
+
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            Debug.LogWarning("TTS called with empty text. Ignoring.");
+            return;
+        }
 
         if (interruptOnNewSpeak && _speakRoutine != null)
-        {
             StopSpeaking();
-        }
 
         _speakRoutine = StartCoroutine(SendToTTS(text));
     }
@@ -101,7 +105,7 @@ public class SlideTTSAgent : MonoBehaviour
             _speakRoutine = null;
         }
 
-        if (audioSource && audioSource.isPlaying)
+        if (audioSource != null && audioSource.isPlaying)
             audioSource.Stop();
     }
 
@@ -109,11 +113,15 @@ public class SlideTTSAgent : MonoBehaviour
     {
         if (audioSource == null)
         {
-            Debug.LogError("[SlideTTSAgent] AudioSource is not assigned.");
+            Debug.LogError("AudioSource is not assigned.");
             yield break;
         }
 
-        string json = "{\"text\":\"" + EscapeJson(text) + "\"}";
+        string escaped = EscapeJson(text);
+        string json = "{\"text\":\"" + escaped + "\"}";
+
+        Debug.Log("Sending JSON: " + json);
+
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
 
         using (UnityWebRequest request = new UnityWebRequest(ttsUrl, "POST"))
@@ -121,41 +129,40 @@ public class SlideTTSAgent : MonoBehaviour
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
-            if (!string.IsNullOrEmpty(authorizationHeader))
-                request.SetRequestHeader("Authorization", authorizationHeader);
-
             request.timeout = requestTimeoutSeconds;
 
             yield return request.SendWebRequest();
 
-            if (request.result == UnityWebRequest.Result.Success)
+            if (request.result != UnityWebRequest.Result.Success)
             {
-                byte[] audioData = request.downloadHandler.data;
-                if (audioData == null || audioData.Length == 0)
-                {
-                    Debug.LogError("[SlideTTSAgent] TTS returned empty audio data.");
-                    yield break;
-                }
-
-                WAV wav = new WAV(audioData);
-                if (wav.SampleCount <= 0 || wav.Frequency <= 0 || wav.LeftChannel == null)
-                {
-                    Debug.LogError("[SlideTTSAgent] Invalid WAV data.");
-                    yield break;
-                }
-
-                AudioClip clip = AudioClip.Create("SlideTTS", wav.SampleCount, 1, wav.Frequency, false);
-                clip.SetData(wav.LeftChannel, 0);
-
-                audioSource.clip = clip;
-                audioSource.Play();
-
-                yield return new WaitForSeconds(clip.length);
+                Debug.LogError("TTS HTTP Error: " + request.downloadHandler.text);
+                _speakRoutine = null;
+                yield break;
             }
-            else
+
+            byte[] audioData = request.downloadHandler.data;
+
+            if (audioData == null || audioData.Length == 0)
             {
-                Debug.LogError($"[SlideTTSAgent] TTS Error: {request.error}");
+                Debug.LogError("TTS returned empty audio.");
+                _speakRoutine = null;
+                yield break;
             }
+
+            WAV wav = new WAV(audioData);
+
+            if (wav.SampleCount <= 0 || wav.Frequency <= 0 || wav.LeftChannel == null)
+            {
+                Debug.LogError("Invalid WAV data.");
+                _speakRoutine = null;
+                yield break;
+            }
+
+            AudioClip clip = AudioClip.Create("SlideTTS", wav.SampleCount, 1, wav.Frequency, false);
+            clip.SetData(wav.LeftChannel, 0);
+
+            audioSource.clip = clip;
+            audioSource.Play();
         }
 
         _speakRoutine = null;
@@ -164,8 +171,12 @@ public class SlideTTSAgent : MonoBehaviour
     string EscapeJson(string input)
     {
         if (string.IsNullOrEmpty(input)) return "";
-        return input.Replace("\\", "\\\\").Replace("\"", "\\\"")
-                    .Replace("\n", "\\n").Replace("\r", "")
-                    .Replace("\t", "\\t");
+
+        return input
+            .Replace("\\", "\\\\")
+            .Replace("\"", "\\\"")
+            .Replace("\n", "\\n")
+            .Replace("\r", "")
+            .Replace("\t", "\\t");
     }
 }

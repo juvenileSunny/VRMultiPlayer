@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: FullVirusLecture
   m_EditorClassIdentifier: 
   slides:
+  - title: Welcome
+    content: Welcome To The Biology Lecture
+    slideImage: {fileID: 0}
   - title: 'Part 1. Introduction: Discovering Viruses'
     content: "Here\u2019s an age-old question: Where do infectious diseases come
       from?\r\n"

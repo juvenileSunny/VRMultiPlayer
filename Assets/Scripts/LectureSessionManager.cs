@@ -153,15 +153,13 @@ namespace XRMultiplayer.MiniGames
         public override void FinishGame(bool submitScore = true)
         {
             base.FinishGame(submitScore);
-            if (!slideAgent.IsSpeaking || !slideAgent.endOfSpeech)
-            {
-                gameStarted = false;
-                foreach (var obj in objectsToDeactivateOnGameFinish)
-                    if (obj != null) obj.SetActive(false);
-                  
-                foreach (var obj in objectsToActivateOnGameFinish)
-                    if (obj != null) obj.SetActive(true);
-            }
+            gameStarted = false;
+
+            foreach (var obj in objectsToDeactivateOnGameFinish)
+                if (obj != null) obj.SetActive(false);
+
+            foreach (var obj in objectsToActivateOnGameFinish)
+                if (obj != null) obj.SetActive(true);
             
 
             foreach (var kvp in playerJoinTimes)
