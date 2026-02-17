@@ -20,7 +20,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Blue Anchor Arrow
+  m_Name: Red Anchor Arrow
   m_Shader: {fileID: -6465566751694194690, guid: 0927d29e476ce5843b1f7d2a96943c51, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
@@ -157,7 +157,7 @@ Material:
     - _ZWrite: 1
     - _ZWriteControl: 0
     m_Colors:
-    - _BaseColor: {r: 0.12549017, g: 0.559034, b: 0.9529412, a: 1}
+    - _BaseColor: {r: 0.9529412, g: 0.12549017, b: 0.1505664, a: 1}
     - _Color: {r: 0.12549016, g: 0.5882353, b: 0.9529411, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _NormalOffset: {r: 0, g: 0, b: 0, a: 0}

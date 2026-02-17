@@ -112,7 +112,7 @@ namespace XRMultiplayer.MiniGames
             m_LocalPlayerTeleportProvider = FindFirstObjectByType<TeleportationProvider>();
 
             m_TeleportZonesObject.SetActive(false);
-            m_BestAllText.text = "<b>Current Record</b>: No Record Set";
+            m_BestAllText.text = "<b>Players in Session </b>: time elapsed";
             m_ScoreboardStartPose = new Pose(m_ScoreboardTransform.position, m_ScoreboardTransform.rotation);
             m_GameNameText.text = currentMiniGame.gameName;
 
@@ -233,18 +233,18 @@ namespace XRMultiplayer.MiniGames
         {
             if (m_BestAllScore.Value <= 0.0f)
             {
-                m_BestAllText.text = $"<b>Current Record</b>: No Record Set";
+                m_BestAllText.text = $"<b>Players in Session </b>: time elapsed";
             }
             else
             {
                 if (currentMiniGame.currentGameType == MiniGameBase.GameType.Time)
                 {
                     TimeSpan time = TimeSpan.FromSeconds(current);
-                    m_BestAllText.text = $"<b>Current Record</b>: {time.ToString(TIME_FORMAT)}";
+                    m_BestAllText.text = $"<b>Players in Session</b>: {time.ToString(TIME_FORMAT)}";
                 }
                 else
                 {
-                    m_BestAllText.text = $"<b>Current Record</b>: {current:N0}";
+                    m_BestAllText.text = $"<b>Players in Session</b>: {current:N0}";
                 }
             }
         }
@@ -934,7 +934,7 @@ namespace XRMultiplayer.MiniGames
         {
             if (m_BestAllScore.Value <= 0.0f)
             {
-                textAsset.text = $"<b>Current Record</b>: No Record Set";
+                textAsset.text = $"<b>Players in Session</b>: Time";
             }
             else
             {
@@ -943,14 +943,14 @@ namespace XRMultiplayer.MiniGames
                     if (score <= m_BestAllScore.Value && m_BestAllScore.Value > 0.0f)
                     {
                         TimeSpan time = TimeSpan.FromSeconds(score);
-                        textAsset.text = $"<b>Current Record</b>: {time.ToString(TIME_FORMAT)}";
+                        textAsset.text = $"<b>Players in Session</b>: {time.ToString(TIME_FORMAT)}";
                     }
                 }
                 else
                 {
                     if (score >= m_BestAllScore.Value && m_BestAllScore.Value > 0.0f)
                     {
-                        textAsset.text = $"<b>Current Record</b>:  {score:N0}";
+                        textAsset.text = $"<b>Players in Session</b>:  {score:N0}";
                     }
                 }
             }
