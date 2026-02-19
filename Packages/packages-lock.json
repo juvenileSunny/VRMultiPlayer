@@ -7,7 +7,7 @@
       "dependencies": {
         "com.unity.nuget.newtonsoft-json": "3.2.1"
       },
-      "hash": "39b7174a468fe69cfc73ed58b3086a8eee094806"
+      "hash": "62df1c71f569acaf60550c8dddc1836ac373845a"
     },
     "com.srcnalt.openai-unity": {
       "version": "https://github.com/srcnalt/OpenAI-Unity.git",

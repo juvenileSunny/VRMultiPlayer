@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/TypeMenuScene.unity
+    guid: 15902edce3fe6a142952ee0e0d58837c
+  - enabled: 1
     path: Assets/Scenes/MindMap_XR_Tutorial.unity
     guid: 643d16a149d604a4fb6f8ad08ebb54a7
   - enabled: 1

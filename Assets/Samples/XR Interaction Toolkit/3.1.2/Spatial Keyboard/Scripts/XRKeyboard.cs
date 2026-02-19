@@ -1,3 +1,4 @@
+#if TEXT_MESH_PRO_PRESENT || (UGUI_2_0_PRESENT && UNITY_6000_0_OR_NEWER)
 using System;
 using System.Collections.Generic;
 using TMPro;
@@ -104,11 +105,11 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
             {
                 if (m_CurrentInputField == value)
                     return;
-                
+
                 StopObservingInputField(m_CurrentInputField);
                 m_CurrentInputField = value;
                 StartObservingInputField(m_CurrentInputField);
-                
+
                 using (m_KeyboardTextEventArgs.Get(out var args))
                 {
                     args.keyboard = this;
@@ -136,7 +137,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
         /// <summary>
         /// Event invoked when keyboard text is updated.
         /// </summary>
-        public KeyboardTextEvent onTextUpdated 
+        public KeyboardTextEvent onTextUpdated
         {
             get => m_OnTextUpdated;
             set => m_OnTextUpdated = value;
@@ -160,7 +161,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
         /// <summary>
         /// Event invoked after keyboard shift is changed. These event args also contain the value for the caps lock state.
         /// </summary>
-        public KeyboardModifiersEvent onShifted 
+        public KeyboardModifiersEvent onShifted
         {
             get => m_OnShifted;
             set => m_OnShifted = value;
@@ -172,7 +173,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
         /// <summary>
         /// Event invoked when keyboard layout is changed.
         /// </summary>
-        public KeyboardLayoutEvent onLayoutChanged 
+        public KeyboardLayoutEvent onLayoutChanged
         {
             get => m_OnLayoutChanged;
             set => m_OnLayoutChanged = value;
@@ -280,7 +281,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
         /// List of keys associated with this keyboard.
         /// </summary>
         public List<XRKeyboardKey> keys { get; set; }
-        
+
         int m_CaretPosition;
 
         /// <summary>
@@ -302,17 +303,17 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
         bool m_CapsLocked;
 
         /// <summary>
-        /// (Read Only) Gets the caps lock state of the keyboard. 
+        /// (Read Only) Gets the caps lock state of the keyboard.
         /// </summary>
         public bool capsLocked => m_CapsLocked;
-        
+
         bool m_IsOpen;
-        
+
         /// <summary>
         /// Returns true if the keyboard has been opened with the open function and the keyboard is active and enabled, otherwise returns false.
         /// </summary>
         public bool isOpen => (m_IsOpen && isActiveAndEnabled);
-        
+
         Dictionary<string, List<SubsetMapping>> m_SubsetLayoutMap;
         HashSet<XRKeyboardLayout> m_KeyboardLayouts;
 
@@ -340,7 +341,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
                     subsetMappings.Add(subsetMapping);
                 else
                     m_SubsetLayoutMap[subsetMapping.layoutString] = new List<SubsetMapping> { subsetMapping };
-                
+
                 m_KeyboardLayouts.Add(subsetMapping.layoutRoot);
             }
 
@@ -450,10 +451,10 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
                         // cancel
                         break;
                     case "\\r" when submitOnEnter:
-                    {
-                        Submit();
-                        break;
-                    }
+                        {
+                            Submit();
+                            break;
+                        }
                     case "\\cl":
                         // Clear
                         Clear();
@@ -463,16 +464,16 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
                         Close();
                         break;
                     default:
-                    {
-                        UpdateText(keyPress);
-                        break;
-                    }
+                        {
+                            UpdateText(keyPress);
+                            break;
+                        }
                 }
             }
         }
 
         /// <summary>
-        /// Pre-process function when a key is pressed. 
+        /// Pre-process function when a key is pressed.
         /// </summary>
         /// <param name="key">Key that is about to process.</param>
         public virtual void PreprocessKeyPress(XRKeyboardKey key)
@@ -480,7 +481,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
         }
 
         /// <summary>
-        /// Post-process function when a key is pressed. 
+        /// Post-process function when a key is pressed.
         /// </summary>
         /// <param name="key">Key that has just been processed.</param>
         public virtual void PostprocessKeyPress(XRKeyboardKey key)
@@ -493,7 +494,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
             }
         }
 
-        #region Process Key Functions
+#region Process Key Functions
 
         /// <summary>
         /// Updates the keyboard text by inserting the <see cref="newText"/> string into the existing <see cref="text"/>.
@@ -503,9 +504,9 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
         /// the text does not exceed the <see cref="TMP_InputField.characterLimit"/>.</remarks>
         public virtual void UpdateText(string newText)
         {
-            // Attempt to add key press to current text 
+            // Attempt to add key press to current text
             var updatedText = text;
-            
+
             updatedText = updatedText.Insert(caretPosition, newText);
 
             var isUpdatedTextWithinLimits = !m_MonitorCharacterLimit || updatedText.Length <= m_CharacterLimit;
@@ -529,7 +530,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
         }
 
         /// <summary>
-        /// Process shift command for keyboard. 
+        /// Process shift command for keyboard.
         /// </summary>
         public virtual void Shift(bool shiftValue)
         {
@@ -544,7 +545,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
         }
 
         /// <summary>
-        /// Process caps lock command for keyboard. 
+        /// Process caps lock command for keyboard.
         /// </summary>
         public virtual void CapsLock(bool capsLockValue)
         {
@@ -590,7 +591,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
             if (closeOnSubmit)
                 Close(false);
         }
-        
+
         /// <summary>
         /// Clears text to an empty string.
         /// </summary>
@@ -635,12 +636,12 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
             return false;
         }
 
-        #endregion
+#endregion
 
-        #region Open Functions
+#region Open Functions
 
         /// <summary>
-        /// Opens the keyboard with a <see cref="TMP_InputField"/> parameter as the active input field. 
+        /// Opens the keyboard with a <see cref="TMP_InputField"/> parameter as the active input field.
         /// </summary>
         /// <param name="inputField">The input field opening this keyboard.</param>
         /// <param name="observeCharacterLimit">If true, keyboard will observe the character limit from the <see cref="inputField"/>.</param>
@@ -696,9 +697,9 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
             m_IsOpen = true;
         }
 
-        #endregion
+#endregion
 
-        #region Close Functions
+#region Close Functions
 
         /// <summary>
         /// Process close command for keyboard.
@@ -761,9 +762,9 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
             }
         }
 
-        #endregion
+#endregion
 
-        #region Input Field Handling
+#region Input Field Handling
 
         protected virtual void StopObservingInputField(TMP_InputField inputField)
         {
@@ -780,7 +781,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
 
             currentInputField.onValueChanged.AddListener(OnInputFieldValueChange);
         }
-        
+
         /// <summary>
         /// Callback method invoked when the input field's text value changes.
         /// </summary>
@@ -791,6 +792,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
             text = updatedText;
         }
 
-        #endregion
+#endregion
     }
 }
+#endif
