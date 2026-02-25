@@ -6,6 +6,7 @@ using System.Linq;
 using PanettoneGames.GenEvents;
 using SplineMesh;
 using UnityEngine;
+using Unity.Netcode;
 
 // Data classes for mind map structure
 [System.Serializable]
@@ -117,7 +118,17 @@ public class MindMapData
         // Clean the text to remove invisible characters (call static method from MindMapManager)
         string cleanedText = MindMapManager.CleanText(text);
         
-        string id = System.Guid.NewGuid().ToString();
+        // Use NetworkObjectId if available for consistent IDs across clients, otherwise use GUID
+        string id;
+        NetworkObject networkObject = gameObject.GetComponent<NetworkObject>();
+        if (networkObject != null && networkObject.IsSpawned)
+        {
+            id = networkObject.NetworkObjectId.ToString();
+        }
+        else
+        {
+            id = System.Guid.NewGuid().ToString();
+        }
         var nodeData = new MindMapNodeData(id, cleanedText, color, gameObject.transform.position);
 
         nodes[id] = nodeData;
@@ -425,15 +436,44 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
             UpdateNodeLastInteractedBy(nodeId2);
         }
     }
+    
+    // Helper method to create visual connection with proper setup
+    private GameObject InstantiateConnection()
+    {
+        GameObject newLine = Instantiate<GameObject>(connectionPrefab);
+        
+        // Network spawn if in networked scene
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+        {
+            NetworkObject networkObject = newLine.GetComponent<NetworkObject>();
+            if (networkObject != null)
+            {
+                networkObject.Spawn();
+                Debug.Log("Connection spawned on network");
+            }
+        }
+        
+        return newLine;
+    }
 
     private void CreateVisualConnection(string nodeId1, string nodeId2, Transform transform1, Transform transform2)
     {
         var connectionKey = GetConnectionKey(nodeId1, nodeId2);
 
-        GameObject newLine = Instantiate<GameObject>(connectionPrefab);
+        GameObject newLine = InstantiateConnection();
         MindMapConnection line = newLine.GetComponent<MindMapConnection>();
-        line.pointA = transform1;
-        line.pointB = transform2;
+        
+        // Use SetNodes which handles both local and network sync
+        if (line != null)
+        {
+            line.SetNodes(transform1, transform2);
+        }
+        else
+        {
+            // Fallback for non-NetworkBehaviour version
+            line.pointA = transform1;
+            line.pointB = transform2;
+        }
 
         visualConnections[connectionKey] = newLine;
     }

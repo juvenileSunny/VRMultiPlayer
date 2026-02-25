@@ -4,8 +4,9 @@ using PanettoneGames.GenEvents;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Unity.Netcode;
 
-public class MindMapNode : MonoBehaviour
+public class MindMapNode : NetworkBehaviour
 {
     [Header("Connection System")]
     public LayerMask targetLayer;
@@ -114,16 +115,49 @@ public class MindMapNode : MonoBehaviour
     // Handle real-time text input changes
     private void OnTextInputChanged(string newText)
     {
-        // Update the data structure in real-time as user types
+        // Update locally first
+        if (nodeText != null && nodeText.text != newText)
+        {
+            nodeText.text = newText;
+        }
+        
+        // Update the data structure
         if (mapManager != null)
         {
             mapManager.UpdateNodeText(gameObject, newText);
         }
         
-        // Also update the display text if it's different
+        // Sync to network if networked
+        if (IsSpawned)
+        {
+            UpdateTextServerRpc(newText);
+        }
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    private void UpdateTextServerRpc(string newText)
+    {
+        UpdateTextClientRpc(newText);
+    }
+    
+    [ClientRpc]
+    private void UpdateTextClientRpc(string newText)
+    {
+        // Update visual (skip if this is the sender)
         if (nodeText != null && nodeText.text != newText)
         {
             nodeText.text = newText;
+        }
+        
+        if (inputFieldComponent != null && inputFieldComponent.text != newText)
+        {
+            inputFieldComponent.text = newText;
+        }
+        
+        // Update data structure
+        if (mapManager != null)
+        {
+            mapManager.UpdateNodeText(gameObject, newText);
         }
     }
     
@@ -285,24 +319,51 @@ public class MindMapNode : MonoBehaviour
             currentColorIndex = (currentColorIndex + 1) % availableColors.Length;
             Color newColor = availableColors[currentColorIndex];
             
-            // Update the visual representation
-            nodeRenderer.material.color = newColor;
-
-            // Update the data structure via MindMapManager
-            if (mapManager != null)
+            // Update locally
+            ApplyColorChange(newColor);
+            
+            // Sync to network if networked
+            if (IsSpawned)
             {
-                mapManager.UpdateNodeColor(gameObject, newColor);
-            }
-
-            // Update the stored original color to the new color
-            UpdateOriginalColor();
-
-            // Re-apply highlight if currently selected
-            if (isSelected)
-            {
-                ShowHighlight();
+                UpdateColorServerRpc(newColor);
             }
         }
+    }
+    
+    private void ApplyColorChange(Color newColor)
+    {
+        // Update the visual representation
+        if (nodeRenderer != null)
+        {
+            nodeRenderer.material.color = newColor;
+        }
+
+        // Update the data structure via MindMapManager
+        if (mapManager != null)
+        {
+            mapManager.UpdateNodeColor(gameObject, newColor);
+        }
+
+        // Update the stored original color to the new color
+        UpdateOriginalColor();
+
+        // Re-apply highlight if currently selected
+        if (isSelected)
+        {
+            ShowHighlight();
+        }
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    private void UpdateColorServerRpc(Color newColor)
+    {
+        UpdateColorClientRpc(newColor);
+    }
+    
+    [ClientRpc]
+    private void UpdateColorClientRpc(Color newColor)
+    {
+        ApplyColorChange(newColor);
     }
 
     // Helper method to restore original color

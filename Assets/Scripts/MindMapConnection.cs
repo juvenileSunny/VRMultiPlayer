@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
+using Unity.Netcode;
 
 [RequireComponent(typeof(LineRenderer))]
-public class MindMapConnection : MonoBehaviour
+public class MindMapConnection : NetworkBehaviour
 {
     public Transform pointA;
     public Transform pointB;
@@ -11,6 +12,10 @@ public class MindMapConnection : MonoBehaviour
     private LineRenderer lineRenderer;
     private BoxCollider boxCollider;
     private MindMapManager mapManager;
+    
+    // Network variables to sync which nodes this connection connects
+    private NetworkVariable<ulong> m_NodeA_NetworkId = new NetworkVariable<ulong>();
+    private NetworkVariable<ulong> m_NodeB_NetworkId = new NetworkVariable<ulong>();
 
     void Start()
     {
@@ -19,6 +24,12 @@ public class MindMapConnection : MonoBehaviour
 
         // Find the MindMapManager in the scene
         mapManager = FindObjectOfType<MindMapManager>();
+        
+        // If networked, resolve node references from NetworkObjectIds
+        if (IsSpawned)
+        {
+            ResolveNodeReferences();
+        }
 
         // Add or get BoxCollider for raycast interaction
         boxCollider = GetComponent<BoxCollider>();
@@ -51,11 +62,54 @@ public class MindMapConnection : MonoBehaviour
     // Maintains the rendered lines position so that the connection will move with the nodes as you move it around.
     void Update()
     {
+        // Try to resolve references if they're missing and we're networked
+        if (IsSpawned && (pointA == null || pointB == null))
+        {
+            ResolveNodeReferences();
+        }
+        
         if (pointA != null && pointB != null)
         {
             lineRenderer.SetPosition(0, pointA.position);
             lineRenderer.SetPosition(1, pointB.position);
             UpdateCollider();
+        }
+    }
+    
+    // Set the node references and sync to network
+    public void SetNodes(Transform nodeA, Transform nodeB)
+    {
+        pointA = nodeA;
+        pointB = nodeB;
+        
+        // If networked, sync the NetworkObjectIds
+        if (IsSpawned && IsServer)
+        {
+            NetworkObject netObjA = nodeA.GetComponent<NetworkObject>();
+            NetworkObject netObjB = nodeB.GetComponent<NetworkObject>();
+            
+            if (netObjA != null && netObjB != null)
+            {
+                m_NodeA_NetworkId.Value = netObjA.NetworkObjectId;
+                m_NodeB_NetworkId.Value = netObjB.NetworkObjectId;
+            }
+        }
+    }
+    
+    // Resolve node references from NetworkObjectIds
+    private void ResolveNodeReferences()
+    {
+        if (m_NodeA_NetworkId.Value != 0 && m_NodeB_NetworkId.Value != 0)
+        {
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(m_NodeA_NetworkId.Value, out NetworkObject nodeA))
+            {
+                pointA = nodeA.transform;
+            }
+            
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(m_NodeB_NetworkId.Value, out NetworkObject nodeB))
+            {
+                pointB = nodeB.transform;
+            }
         }
     }
 

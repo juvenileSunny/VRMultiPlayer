@@ -1,6 +1,7 @@
 // Attach this script to any clickable GameObject
 using UnityEngine;
 using PanettoneGames.GenEvents;
+using Unity.Netcode;
 
 public class PrefabSpawn : MonoBehaviour
 {
@@ -21,7 +22,26 @@ public class PrefabSpawn : MonoBehaviour
         if (prefabToSpawn != null)
         {
             Vector3 spawnPos = spawnLocation != null ? spawnLocation.position : transform.position + Vector3.up;
-            Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
+            GameObject spawnedObject = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
+            
+            // Network spawn if in networked scene
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+            {
+                NetworkObject networkObject = spawnedObject.GetComponent<NetworkObject>();
+                if (networkObject != null)
+                {
+                    networkObject.Spawn();
+                    Debug.Log($"Spawned node on network: {spawnedObject.name}");
+                }
+                else
+                {
+                    Debug.LogWarning($"Spawned object {spawnedObject.name} has no NetworkObject component!");
+                }
+            }
+            else
+            {
+                Debug.Log($"Spawned node locally (no network): {spawnedObject.name}");
+            }
         }
     }
 }
