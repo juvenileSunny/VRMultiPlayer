@@ -1,12 +1,39 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using PanettoneGames.GenEvents;
 using SplineMesh;
 using UnityEngine;
 
 // Data classes for mind map structure
+[System.Serializable]
+public class MindMapSnapshot
+{
+    public string timestamp;
+    public MindMapData mindMapData;
+
+    public MindMapSnapshot(string time, MindMapData data)
+    {
+        timestamp = time;
+        mindMapData = data;
+    }
+}
+
+[System.Serializable]
+public class MindMapSaveFile
+{
+    public string serialNumber;
+    public List<MindMapSnapshot> snapshots = new List<MindMapSnapshot>();
+
+    public MindMapSaveFile(string serial)
+    {
+        serialNumber = serial;
+        snapshots = new List<MindMapSnapshot>();
+    }
+}
+
 [System.Serializable]
 public class MindMapNodeData
 {
@@ -15,6 +42,7 @@ public class MindMapNodeData
     public Color color;
     public Vector3 position;
     public List<string> connections; // Changed from HashSet to List for Unity serialization
+    public string lastInteractedBy; // Serial number of the user who last interacted with this node
 
     public MindMapNodeData(string nodeId, string nodeText = "", Color? nodeColor = null, Vector3? pos = null)
     {
@@ -23,6 +51,7 @@ public class MindMapNodeData
         color = nodeColor ?? Color.white;
         position = pos ?? Vector3.zero;
         connections = new List<string>();
+        lastInteractedBy = "";
     }
 
     // Helper method to check if connection exists (since we're using List instead of HashSet)
@@ -174,6 +203,12 @@ public class MindMapData
             nodes[nodeId].position = newPosition;
     }
 
+    public void UpdateLastInteractedBy(string nodeId, string serialNumber)
+    {
+        if (nodes.ContainsKey(nodeId))
+            nodes[nodeId].lastInteractedBy = serialNumber;
+    }
+
     public Dictionary<string, MindMapNodeData> GetAllNodes() => new Dictionary<string, MindMapNodeData>(nodes);
 }
 
@@ -190,6 +225,13 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
 
     // Visual connections using string-based keys
     private Dictionary<(string, string), GameObject> visualConnections;
+
+    // Auto-save settings
+    private float autoSaveInterval = 0.1f; // Save every 0.1 seconds
+    private float lastSaveTime = 0f;
+    private string saveDirectory = "MindMapSaves";
+    private string currentSerialNumber = "";
+    private string currentSaveFilePath = "";
 
     // Helper method to clean text by removing invisible Unicode characters
     public static string CleanText(string text)
@@ -243,11 +285,26 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
 
         mindMapData.RebuildDictionaries(); // Ensure dictionaries are built from serialized data
         visualConnections = new Dictionary<(string, string), GameObject>();
+
+        // Create save directory if it doesn't exist
+        string fullSavePath = Path.Combine(Application.persistentDataPath, saveDirectory);
+        if (!Directory.Exists(fullSavePath))
+        {
+            Directory.CreateDirectory(fullSavePath);
+            Debug.Log($"Created save directory at: {fullSavePath}");
+        }
     }
 
     // late update, 
     void LateUpdate()
     {
+        // Auto-save functionality
+        if (Time.time - lastSaveTime >= autoSaveInterval)
+        {
+            SaveMindMapData();
+            lastSaveTime = Time.time;
+        }
+
         // if in tutorial scene, and current tutorial event is for MindNodeCompleted complete, raise tutorial event 
         if (tutorialEvents != null && TutorialManager.currentEvent == TutorialManager.TutorialEventIDs.MindNodeCompleted)
         {
@@ -363,6 +420,9 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
         {
             CreateVisualConnection(nodeId1, nodeId2, item1.transform, item2.transform);
             Debug.Log($"Connection created between {nodeId1} and {nodeId2}");
+            // Update last interacted by for both nodes
+            UpdateNodeLastInteractedBy(nodeId1);
+            UpdateNodeLastInteractedBy(nodeId2);
         }
     }
 
@@ -379,35 +439,56 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
     }
 
     // NEW API METHODS for external scripts to use
+    
+    // Helper method to ensure a node exists in the data structure
+    private string EnsureNodeExists(GameObject nodeGameObject)
+    {
+        string nodeId = mindMapData.GetNodeId(nodeGameObject);
+        if (string.IsNullOrEmpty(nodeId))
+        {
+            // Node doesn't exist, add it
+            nodeId = mindMapData.AddNode(nodeGameObject);
+            Debug.Log($"Auto-added node {nodeGameObject.name} (ID: {nodeId}) to data structure");
+        }
+        return nodeId;
+    }
+    
     public void UpdateNodeText(GameObject nodeGameObject, string newText)
     {
         // Clean the text to remove invisible characters
         string cleanedText = CleanText(newText);
         
-        string nodeId = mindMapData.GetNodeId(nodeGameObject);
+        string nodeId = EnsureNodeExists(nodeGameObject);
         if (!string.IsNullOrEmpty(nodeId))
         {
             Debug.Log($"UpdateNodeText: Updating node {nodeGameObject.name} (ID: {nodeId}) text from '{mindMapData.GetNode(nodeId)?.text}' to '{cleanedText}' (original: '{newText}')");
             mindMapData.UpdateNodeText(nodeId, cleanedText);
+            UpdateNodeLastInteractedBy(nodeId);
         }
         else
         {
-            Debug.LogWarning($"UpdateNodeText: Could not find node ID for GameObject {nodeGameObject.name}");
+            Debug.LogWarning($"UpdateNodeText: Could not find or create node ID for GameObject {nodeGameObject.name}");
         }
     }
 
     public void UpdateNodeColor(GameObject nodeGameObject, Color newColor)
     {
-        string nodeId = mindMapData.GetNodeId(nodeGameObject);
+        string nodeId = EnsureNodeExists(nodeGameObject);
         if (!string.IsNullOrEmpty(nodeId))
+        {
             mindMapData.UpdateNodeColor(nodeId, newColor);
+            UpdateNodeLastInteractedBy(nodeId);
+        }
     }
 
     public void UpdateNodePosition(GameObject nodeGameObject, Vector3 newPosition)
     {
-        string nodeId = mindMapData.GetNodeId(nodeGameObject);
+        string nodeId = EnsureNodeExists(nodeGameObject);
         if (!string.IsNullOrEmpty(nodeId))
+        {
             mindMapData.UpdateNodePosition(nodeId, newPosition);
+            UpdateNodeLastInteractedBy(nodeId);
+        }
     }
 
     public string GetNodeText(GameObject nodeGameObject)
@@ -498,6 +579,93 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
         return string.Compare(a, b) < 0 ? (a, b) : (b, a);
     }
 
+    // Helper method to update last interacted by field
+    private void UpdateNodeLastInteractedBy(string nodeId)
+    {
+        if (string.IsNullOrEmpty(nodeId)) return;
+        
+        try
+        {
+            string serialNumber = DataEcho.SessionCollector.Instance.GetSerialNumber();
+            mindMapData.UpdateLastInteractedBy(nodeId, serialNumber);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"Could not get serial number from DataEcho: {e.Message}");
+        }
+    }
+
+    // Save mind map data to file with timestamp
+    private void SaveMindMapData()
+    {
+        try
+        {
+            // Get current serial number
+            string serialNumber = GetCurrentSerialNumber();
+            if (string.IsNullOrEmpty(serialNumber))
+            {
+                // No serial number yet, skip saving
+                return;
+            }
+
+            // Update file path if serial number changed
+            if (serialNumber != currentSerialNumber)
+            {
+                currentSerialNumber = serialNumber;
+                string filename = $"MindMap_{currentSerialNumber}.json";
+                currentSaveFilePath = Path.Combine(Application.persistentDataPath, saveDirectory, filename);
+            }
+
+            // Load existing save file or create new one
+            MindMapSaveFile saveFile;
+            if (File.Exists(currentSaveFilePath))
+            {
+                string existingJson = File.ReadAllText(currentSaveFilePath);
+                saveFile = JsonUtility.FromJson<MindMapSaveFile>(existingJson);
+                if (saveFile == null || saveFile.snapshots == null)
+                {
+                    saveFile = new MindMapSaveFile(currentSerialNumber);
+                }
+            }
+            else
+            {
+                saveFile = new MindMapSaveFile(currentSerialNumber);
+            }
+
+            // Create new snapshot with timestamp
+            string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            MindMapSnapshot snapshot = new MindMapSnapshot(timestamp, mindMapData);
+            saveFile.snapshots.Add(snapshot);
+
+            // Save to file
+            string jsonData = JsonUtility.ToJson(saveFile, true);
+            File.WriteAllText(currentSaveFilePath, jsonData);
+            
+            // Optional: Log only occasionally to avoid spam
+            if (Time.frameCount % 300 == 0) // Log every ~5 seconds at 60 FPS
+            {
+                Debug.Log($"Mind map auto-saved to: {currentSaveFilePath} (Total snapshots: {saveFile.snapshots.Count})");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to save mind map data: {e.Message}");
+        }
+    }
+
+    // Helper method to get current serial number
+    private string GetCurrentSerialNumber()
+    {
+        try
+        {
+            return DataEcho.SessionCollector.Instance.GetSerialNumber();
+        }
+        catch (System.Exception)
+        {
+            return "";
+        }
+    }
+
     // DEBUG METHODS - for testing and verification
     [ContextMenu("Debug Text Issues")]
     public void DebugAllNodeTexts()
@@ -558,6 +726,30 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
     {
         var allNodes = mindMapData.GetAllNodes();
         Debug.Log($"Mind Map contains {allNodes.Count} nodes");
+    }
+
+    [ContextMenu("Print Save File Path")]
+    public void PrintSaveFilePath()
+    {
+        string fullSavePath = Path.Combine(Application.persistentDataPath, saveDirectory);
+        string serialNumber = GetCurrentSerialNumber();
+        string fileName = string.IsNullOrEmpty(serialNumber) ? "MindMap_{serialNumber}.json" : $"MindMap_{serialNumber}.json";
+        string fullFilePath = Path.Combine(fullSavePath, fileName);
+        
+        Debug.Log($"=== MIND MAP SAVE LOCATION ===");
+        Debug.Log($"Platform: {Application.platform}");
+        Debug.Log($"Persistent Data Path: {Application.persistentDataPath}");
+        Debug.Log($"Save Directory: {fullSavePath}");
+        Debug.Log($"Current Serial Number: {(string.IsNullOrEmpty(serialNumber) ? "Not Set" : serialNumber)}");
+        Debug.Log($"Save File: {fullFilePath}");
+        Debug.Log($"File Exists: {File.Exists(fullFilePath)}");
+        if (File.Exists(fullFilePath))
+        {
+            FileInfo fileInfo = new FileInfo(fullFilePath);
+            Debug.Log($"File Size: {fileInfo.Length} bytes");
+            Debug.Log($"Last Modified: {fileInfo.LastWriteTime}");
+        }
+        Debug.Log($"=============================");
     }
 
     // Method to verify a specific node

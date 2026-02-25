@@ -147,10 +147,12 @@ public class MindMapNode : MonoBehaviour
             string currentText = GetNodeText();
             Color currentColor = GetNodeColor();
             
-            // The manager will handle adding this node when connections are made
-            // But we can also update existing data if node already exists
+            // Update methods will automatically add the node if it doesn't exist
             mapManager.UpdateNodeText(gameObject, currentText);
             mapManager.UpdateNodeColor(gameObject, currentColor);
+            mapManager.UpdateNodePosition(gameObject, transform.position);
+            
+            Debug.Log($"Initialized node {gameObject.name} in data structure");
         }
     }
 
