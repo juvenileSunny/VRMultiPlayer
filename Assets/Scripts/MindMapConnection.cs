@@ -96,7 +96,7 @@ public class MindMapConnection : NetworkBehaviour
                 ApplyNodeReferences(idA, idB);
         }
         
-        if (pointA != null && pointB != null)
+        if (pointA != null && pointB != null && lineRenderer != null)
         {
             lineRenderer.SetPosition(0, pointA.position);
             lineRenderer.SetPosition(1, pointB.position);
@@ -166,21 +166,19 @@ public class MindMapConnection : NetworkBehaviour
         // Cache IDs so Update() retry always has them regardless of NetworkVariable sync state
         m_PendingNodeAId = nodeAId;
         m_PendingNodeBId = nodeBId;
-        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(nodeAId, out NetworkObject nodeA))
-        {
-            MindMapNode mindNodeA = nodeA.GetComponentInChildren<MindMapNode>(true);
-            if (mindNodeA != null)
-                pointA = mindNodeA.transform;
-            // else leave null — Update() retries next frame
-        }
 
-        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(nodeBId, out NetworkObject nodeB))
-        {
-            MindMapNode mindNodeB = nodeB.GetComponentInChildren<MindMapNode>(true);
-            if (mindNodeB != null)
-                pointB = mindNodeB.transform;
-            // else leave null — Update() retries next frame
-        }
+        if (NetworkManager.Singleton == null) return; // not in a networked session
+
+        // Use the static registry on MindMapNode — reliable even when XR grab temporarily
+        // reparents the node under the XR controller's attach transform, which would make
+        // GetComponentInChildren return null while grabbed.
+        if (MindMapNode.Registry.TryGetValue(nodeAId, out MindMapNode mindNodeA))
+            pointA = mindNodeA.transform;
+        // else leave null — Update() retries next frame
+
+        if (MindMapNode.Registry.TryGetValue(nodeBId, out MindMapNode mindNodeB))
+            pointB = mindNodeB.transform;
+        // else leave null — Update() retries next frame
     }
 
     // Update the BoxCollider to match the line

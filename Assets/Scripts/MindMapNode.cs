@@ -40,6 +40,18 @@ public class MindMapNode : NetworkBehaviour
     // Prevents trigger collider from firing immediately at spawn (e.g. when two nodes appear at the same position)
     private bool connectionReady = false;
 
+    // Per-collider cooldown so OnTriggerStay doesn't spam RPCs (one attempt per second per pair is enough)
+    private Dictionary<Collider, float> connectionAttemptTime = new Dictionary<Collider, float>();
+    private const float CONNECTION_RPC_COOLDOWN = 1f;
+
+    // Reference to the grab interactable so we can poll isSelected in Update
+    private UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable grabInteractable;
+
+    // Static lookup: root NetworkObjectId → MindMapNode
+    // Used by MindMapConnection to resolve node transforms without GetComponentInChildren,
+    // which fails when XR grab reparents the node under the XR controller attachment point.
+    public static readonly Dictionary<ulong, MindMapNode> Registry = new Dictionary<ulong, MindMapNode>();
+
     void Start()
     {
         // Find the MindMapManager in the scene
@@ -105,10 +117,27 @@ public class MindMapNode : NetworkBehaviour
 
         // setup activate node selection on grab from parent's grab interactable
         var interactable = GetComponentInParent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
+        grabInteractable = interactable;
         interactable?.activated.AddListener((interactor) => ToggleNodeSelection());
 
         // When this client grabs the node, request ownership so ClientNetworkTransform lets us move it
         interactable?.selectEntered.AddListener((args) => OnGrabbed());
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        NetworkObject root = GetComponentInParent<NetworkObject>();
+        if (root != null)
+            Registry[root.NetworkObjectId] = this;
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        base.OnNetworkDespawn();
+        NetworkObject root = GetComponentInParent<NetworkObject>();
+        if (root != null)
+            Registry.Remove(root.NetworkObjectId);
     }
 
     void Update()
@@ -119,8 +148,9 @@ public class MindMapNode : NetworkBehaviour
             OnPositionChanged();
             lastPosition = transform.position;
         }
+
     }
-    
+
     private IEnumerator EnableConnectionAfterDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
@@ -223,39 +253,47 @@ public class MindMapNode : NetworkBehaviour
     }
 
     // Sends an event to the mind map manager that a connection has been created when it touches another MindNode.
-    void OnTriggerEnter(Collider other)
+    void OnTriggerEnter(Collider other) => TryCreateConnection(other);
+
+    // Also check OnTriggerStay: XRGrabInteractable uses kinematic movement during grab,
+    // which can prevent OnTriggerEnter from firing while the node is being held.
+    // Connection creation is idempotent (AreConnected check prevents duplicates).
+    void OnTriggerStay(Collider other) => TryCreateConnection(other);
+
+    // Clean up cooldown entries when colliders separate to avoid stale dictionary growth
+    void OnTriggerExit(Collider other) => connectionAttemptTime.Remove(other);
+
+    private void TryCreateConnection(Collider other)
     {
         // Ignore triggers during the spawn grace period
         if (!connectionReady) return;
 
-        if ((targetLayer.value & (1 << other.gameObject.layer)) != 0)
-        {
-            bool isNetworked = Unity.Netcode.NetworkManager.Singleton != null && Unity.Netcode.NetworkManager.Singleton.IsListening;
-            if (isNetworked)
-            {
-                // Must be spawned to send RPCs
-                if (!IsSpawned)
-                {
-                    Debug.LogWarning($"[MindMapNode] OnTriggerEnter: {gameObject.name} is not spawned yet, skipping connection");
-                    return;
-                }
+        if ((targetLayer.value & (1 << other.gameObject.layer)) == 0) return;
 
-                // Route through server so both host and clients can create connections
-                NetworkObject myNetObj = GetComponentInParent<Unity.Netcode.NetworkObject>();
-                NetworkObject otherNetObj = other.GetComponentInParent<Unity.Netcode.NetworkObject>();
-                if (myNetObj != null && otherNetObj != null)
-                    RequestConnectionServerRpc(myNetObj.NetworkObjectId, otherNetObj.NetworkObjectId);
-                else
-                {
-                    Debug.LogWarning($"[MindMapNode] OnTriggerEnter: Could not find NetworkObject on one or both nodes (myNetObj={myNetObj}, otherNetObj={otherNetObj})");
-                }
-            }
+        // Rate-limit per collider so OnTriggerStay doesn't spam RPCs
+        float now = Time.time;
+        if (connectionAttemptTime.TryGetValue(other, out float lastAttempt) && now - lastAttempt < CONNECTION_RPC_COOLDOWN)
+            return;
+        connectionAttemptTime[other] = now;
+
+        bool isNetworked = Unity.Netcode.NetworkManager.Singleton != null && Unity.Netcode.NetworkManager.Singleton.IsListening;
+        if (isNetworked)
+        {
+            // Must be spawned to send RPCs
+            if (!IsSpawned) return;
+
+            // Route through server so both host and clients can create connections
+            NetworkObject myNetObj = GetComponentInParent<Unity.Netcode.NetworkObject>();
+            NetworkObject otherNetObj = other.GetComponentInParent<Unity.Netcode.NetworkObject>();
+            if (myNetObj != null && otherNetObj != null)
+                RequestConnectionServerRpc(myNetObj.NetworkObjectId, otherNetObj.NetworkObjectId);
             else
-            {
-                // Non-networked scene (tutorial) - use existing event directly
-                mindMapEvent.Raise(this.gameObject, other.gameObject);
-                Debug.Log("MindMapNode triggered/collision detected for connection");
-            }
+                Debug.LogWarning($"[MindMapNode] TryCreateConnection: Could not find NetworkObject on one or both nodes (myNetObj={myNetObj}, otherNetObj={otherNetObj})");
+        }
+        else
+        {
+            // Non-networked scene (tutorial) - use existing event directly
+            mindMapEvent.Raise(this.gameObject, other.gameObject);
         }
     }
     
