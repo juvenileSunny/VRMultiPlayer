@@ -37,6 +37,9 @@ public class MindMapNode : NetworkBehaviour
     private Vector3 lastPosition;
     private bool trackPosition = true;
 
+    // Prevents trigger collider from firing immediately at spawn (e.g. when two nodes appear at the same position)
+    private bool connectionReady = false;
+
     void Start()
     {
         // Find the MindMapManager in the scene
@@ -78,6 +81,9 @@ public class MindMapNode : NetworkBehaviour
         // Initialize node in data structure
         InitializeNodeInDataStructure();
 
+        // Allow a short grace period before the trigger is active so spawn-position overlaps don't create false connections
+        StartCoroutine(EnableConnectionAfterDelay(0.5f));
+
         // Store original color and material
         if (nodeRenderer != null)
         {
@@ -100,6 +106,9 @@ public class MindMapNode : NetworkBehaviour
         // setup activate node selection on grab from parent's grab interactable
         var interactable = GetComponentInParent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
         interactable?.activated.AddListener((interactor) => ToggleNodeSelection());
+
+        // When this client grabs the node, request ownership so ClientNetworkTransform lets us move it
+        interactable?.selectEntered.AddListener((args) => OnGrabbed());
     }
 
     void Update()
@@ -112,6 +121,32 @@ public class MindMapNode : NetworkBehaviour
         }
     }
     
+    private IEnumerator EnableConnectionAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        connectionReady = true;
+    }
+
+    // Request ownership when this client grabs the node
+    private void OnGrabbed()
+    {
+        if (IsSpawned && !IsOwner)
+        {
+            RequestOwnershipServerRpc(NetworkManager.Singleton.LocalClientId);
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void RequestOwnershipServerRpc(ulong requestingClientId)
+    {
+        NetworkObject rootNetObj = GetComponentInParent<NetworkObject>();
+        if (rootNetObj != null)
+        {
+            rootNetObj.ChangeOwnership(requestingClientId);
+            Debug.Log($"Ownership of {gameObject.name} transferred to client {requestingClientId}");
+        }
+    }
+
     // Handle real-time text input changes
     private void OnTextInputChanged(string newText)
     {
@@ -165,10 +200,7 @@ public class MindMapNode : NetworkBehaviour
     private void OnPositionChanged()
     {
         if (mapManager != null)
-        {
             mapManager.UpdateNodePosition(gameObject, transform.position);
-            Debug.Log($"Position updated for {gameObject.name}: {transform.position}");
-        }
     }
 
     // Initialize this node in the data structure
@@ -193,11 +225,70 @@ public class MindMapNode : NetworkBehaviour
     // Sends an event to the mind map manager that a connection has been created when it touches another MindNode.
     void OnTriggerEnter(Collider other)
     {
+        // Ignore triggers during the spawn grace period
+        if (!connectionReady) return;
+
         if ((targetLayer.value & (1 << other.gameObject.layer)) != 0)
         {
-            mindMapEvent.Raise(this.gameObject, other.gameObject);
-            Debug.Log("MindMapNode triggered/collision detected for connection");
+            bool isNetworked = Unity.Netcode.NetworkManager.Singleton != null && Unity.Netcode.NetworkManager.Singleton.IsListening;
+            if (isNetworked)
+            {
+                // Must be spawned to send RPCs
+                if (!IsSpawned)
+                {
+                    Debug.LogWarning($"[MindMapNode] OnTriggerEnter: {gameObject.name} is not spawned yet, skipping connection");
+                    return;
+                }
+
+                // Route through server so both host and clients can create connections
+                NetworkObject myNetObj = GetComponentInParent<Unity.Netcode.NetworkObject>();
+                NetworkObject otherNetObj = other.GetComponentInParent<Unity.Netcode.NetworkObject>();
+                if (myNetObj != null && otherNetObj != null)
+                    RequestConnectionServerRpc(myNetObj.NetworkObjectId, otherNetObj.NetworkObjectId);
+                else
+                {
+                    Debug.LogWarning($"[MindMapNode] OnTriggerEnter: Could not find NetworkObject on one or both nodes (myNetObj={myNetObj}, otherNetObj={otherNetObj})");
+                }
+            }
+            else
+            {
+                // Non-networked scene (tutorial) - use existing event directly
+                mindMapEvent.Raise(this.gameObject, other.gameObject);
+                Debug.Log("MindMapNode triggered/collision detected for connection");
+            }
         }
+    }
+    
+    [Unity.Netcode.ServerRpc(RequireOwnership = false)]
+    private void RequestConnectionServerRpc(ulong nodeAId, ulong nodeBId)
+    {
+        // Server looks up the GameObjects and raises the connection event
+        var spawnedObjects = Unity.Netcode.NetworkManager.Singleton.SpawnManager.SpawnedObjects;
+
+        if (!spawnedObjects.TryGetValue(nodeAId, out Unity.Netcode.NetworkObject nodeA))
+        {
+            Debug.LogWarning($"[MindMapNode] Could not find spawned object with ID {nodeAId}");
+            return;
+        }
+        if (!spawnedObjects.TryGetValue(nodeBId, out Unity.Netcode.NetworkObject nodeB))
+        {
+            Debug.LogWarning($"[MindMapNode] Could not find spawned object with ID {nodeBId}");
+            return;
+        }
+
+        MindMapNode mindNodeA = nodeA.GetComponentInChildren<MindMapNode>();
+        MindMapNode mindNodeB = nodeB.GetComponentInChildren<MindMapNode>();
+
+        if (mindNodeA == null) { Debug.LogWarning($"[MindMapNode] No MindMapNode found in children of {nodeA.name}"); return; }
+        if (mindNodeB == null) { Debug.LogWarning($"[MindMapNode] No MindMapNode found in children of {nodeB.name}"); return; }
+
+        // Re-find mapManager if null (can happen if Start() ran before MindMapManager was initialized)
+        MindMapManager manager = mapManager != null ? mapManager : FindObjectOfType<MindMapManager>();
+        if (manager == null) { Debug.LogWarning($"[MindMapNode] mapManager is null and could not be found in scene!"); return; }
+        mapManager = manager; // cache it for future calls
+
+        // Directly call the manager instead of the event to avoid double-firing
+        manager.OnEventRaised(mindNodeA.gameObject, mindNodeB.gameObject);
     }
 
 

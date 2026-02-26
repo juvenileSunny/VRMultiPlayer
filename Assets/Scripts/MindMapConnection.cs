@@ -17,6 +17,10 @@ public class MindMapConnection : NetworkBehaviour
     private NetworkVariable<ulong> m_NodeA_NetworkId = new NetworkVariable<ulong>();
     private NetworkVariable<ulong> m_NodeB_NetworkId = new NetworkVariable<ulong>();
 
+    // Cached IDs for retry in Update() regardless of whether NetworkVariables have synced yet
+    private ulong m_PendingNodeAId = 0;
+    private ulong m_PendingNodeBId = 0;
+
     void Start()
     {
         lineRenderer = GetComponent<LineRenderer>();
@@ -24,12 +28,6 @@ public class MindMapConnection : NetworkBehaviour
 
         // Find the MindMapManager in the scene
         mapManager = FindObjectOfType<MindMapManager>();
-        
-        // If networked, resolve node references from NetworkObjectIds
-        if (IsSpawned)
-        {
-            ResolveNodeReferences();
-        }
 
         // Add or get BoxCollider for raycast interaction
         boxCollider = GetComponent<BoxCollider>();
@@ -59,13 +57,43 @@ public class MindMapConnection : NetworkBehaviour
         }
     }
 
+    // Called after network spawn - reliable place to subscribe to NetworkVariable changes
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        
+        // Subscribe to NetworkVariable changes so we resolve as soon as values arrive
+        m_NodeA_NetworkId.OnValueChanged += OnNodeIdsChanged;
+        m_NodeB_NetworkId.OnValueChanged += OnNodeIdsChanged;
+        
+        // Try resolving immediately in case values are already set (host side)
+        ResolveNodeReferences();
+    }
+    
+    public override void OnNetworkDespawn()
+    {
+        base.OnNetworkDespawn();
+        m_NodeA_NetworkId.OnValueChanged -= OnNodeIdsChanged;
+        m_NodeB_NetworkId.OnValueChanged -= OnNodeIdsChanged;
+    }
+    
+    // Called whenever either NetworkVariable changes - resolves the node transforms
+    private void OnNodeIdsChanged(ulong oldValue, ulong newValue)
+    {
+        ResolveNodeReferences();
+    }
+
     // Maintains the rendered lines position so that the connection will move with the nodes as you move it around.
     void Update()
     {
-        // Try to resolve references if they're missing and we're networked
+        // Retry resolving transforms every frame until both are found
+        // Uses cached pending IDs (from ClientRpc) OR NetworkVariable values (for late joiners)
         if (IsSpawned && (pointA == null || pointB == null))
         {
-            ResolveNodeReferences();
+            ulong idA = m_PendingNodeAId != 0 ? m_PendingNodeAId : m_NodeA_NetworkId.Value;
+            ulong idB = m_PendingNodeBId != 0 ? m_PendingNodeBId : m_NodeB_NetworkId.Value;
+            if (idA != 0 && idB != 0)
+                ApplyNodeReferences(idA, idB);
         }
         
         if (pointA != null && pointB != null)
@@ -79,37 +107,79 @@ public class MindMapConnection : NetworkBehaviour
     // Set the node references and sync to network
     public void SetNodes(Transform nodeA, Transform nodeB)
     {
-        pointA = nodeA;
-        pointB = nodeB;
-        
-        // If networked, sync the NetworkObjectIds
+        // Always anchor to the MindMapNode child transform (includeInactive:true to survive spawn init)
+        NetworkObject netObjA = nodeA.GetComponentInParent<NetworkObject>();
+        NetworkObject netObjB = nodeB.GetComponentInParent<NetworkObject>();
+
+        if (netObjA != null)
+        {
+            MindMapNode mindNodeA = netObjA.GetComponentInChildren<MindMapNode>(true);
+            pointA = mindNodeA != null ? mindNodeA.transform : netObjA.transform;
+        }
+        else pointA = nodeA;
+
+        if (netObjB != null)
+        {
+            MindMapNode mindNodeB = netObjB.GetComponentInChildren<MindMapNode>(true);
+            pointB = mindNodeB != null ? mindNodeB.transform : netObjB.transform;
+        }
+        else pointB = nodeB;
+
+        // If networked server, sync the NetworkObjectIds to all clients
         if (IsSpawned && IsServer)
         {
-            NetworkObject netObjA = nodeA.GetComponent<NetworkObject>();
-            NetworkObject netObjB = nodeB.GetComponent<NetworkObject>();
-            
             if (netObjA != null && netObjB != null)
             {
                 m_NodeA_NetworkId.Value = netObjA.NetworkObjectId;
                 m_NodeB_NetworkId.Value = netObjB.NetworkObjectId;
+                SetupConnectionClientRpc(netObjA.NetworkObjectId, netObjB.NetworkObjectId);
+            }
+            else
+            {
+                Debug.LogWarning("SetNodes: Could not find NetworkObject on one or both nodes!");
             }
         }
     }
     
-    // Resolve node references from NetworkObjectIds
+    [ClientRpc]
+    private void SetupConnectionClientRpc(ulong nodeAId, ulong nodeBId)
+    {
+        // Skip on server - already set in SetNodes
+        if (IsServer) return;
+        ApplyNodeReferences(nodeAId, nodeBId);
+    }
+    
+    // Resolve node references from NetworkObjectIds (used by late joiners via NetworkVariable)
     private void ResolveNodeReferences()
     {
         if (m_NodeA_NetworkId.Value != 0 && m_NodeB_NetworkId.Value != 0)
         {
-            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(m_NodeA_NetworkId.Value, out NetworkObject nodeA))
-            {
-                pointA = nodeA.transform;
-            }
-            
-            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(m_NodeB_NetworkId.Value, out NetworkObject nodeB))
-            {
-                pointB = nodeB.transform;
-            }
+            ApplyNodeReferences(m_NodeA_NetworkId.Value, m_NodeB_NetworkId.Value);
+        }
+    }
+    
+    // Apply node transforms from NetworkObjectIds — always resolves to MindMapNode child transform.
+    // Does NOT fall back to Node_W root: if MindMapNode not found yet, leaves point null
+    // so the Update() retry loop keeps trying each frame until it resolves.
+    private void ApplyNodeReferences(ulong nodeAId, ulong nodeBId)
+    {
+        // Cache IDs so Update() retry always has them regardless of NetworkVariable sync state
+        m_PendingNodeAId = nodeAId;
+        m_PendingNodeBId = nodeBId;
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(nodeAId, out NetworkObject nodeA))
+        {
+            MindMapNode mindNodeA = nodeA.GetComponentInChildren<MindMapNode>(true);
+            if (mindNodeA != null)
+                pointA = mindNodeA.transform;
+            // else leave null — Update() retries next frame
+        }
+
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(nodeBId, out NetworkObject nodeB))
+        {
+            MindMapNode mindNodeB = nodeB.GetComponentInChildren<MindMapNode>(true);
+            if (mindNodeB != null)
+                pointB = mindNodeB.transform;
+            // else leave null — Update() retries next frame
         }
     }
 

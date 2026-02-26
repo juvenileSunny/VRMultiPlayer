@@ -3,7 +3,7 @@ using UnityEngine;
 using PanettoneGames.GenEvents;
 using Unity.Netcode;
 
-public class PrefabSpawn : MonoBehaviour
+public class PrefabSpawn : NetworkBehaviour
 {
     public IntEvent tutorialEvents;
     public TutorialManager tutorialManager;
@@ -21,27 +21,47 @@ public class PrefabSpawn : MonoBehaviour
 
         if (prefabToSpawn != null)
         {
-            Vector3 spawnPos = spawnLocation != null ? spawnLocation.position : transform.position + Vector3.up;
-            GameObject spawnedObject = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
-            
-            // Network spawn if in networked scene
+            Vector3 spawnPos = GetSpawnPosition();
+
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
             {
-                NetworkObject networkObject = spawnedObject.GetComponent<NetworkObject>();
-                if (networkObject != null)
-                {
-                    networkObject.Spawn();
-                    Debug.Log($"Spawned node on network: {spawnedObject.name}");
-                }
-                else
-                {
-                    Debug.LogWarning($"Spawned object {spawnedObject.name} has no NetworkObject component!");
-                }
+                // Route through server so any client can spawn nodes for everyone
+                SpawnNodeServerRpc(spawnPos);
             }
             else
             {
-                Debug.Log($"Spawned node locally (no network): {spawnedObject.name}");
+                // Non-networked scene (tutorial) - spawn locally
+                Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
+                Debug.Log($"Spawned node locally (no network)");
             }
         }
+    }
+
+    // Returns spawn position: uses spawnLocation if assigned, otherwise this object's position + small offset
+    private Vector3 GetSpawnPosition()
+    {
+        if (spawnLocation != null)
+            return spawnLocation.position;
+
+        return transform.position + Vector3.up * 0.1f;
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    private void SpawnNodeServerRpc(Vector3 spawnPos)
+    {
+        // Spawn with SERVER ownership. Position is authoritative from the server and
+        // syncs correctly to all clients via ClientNetworkTransform.
+        // Ownership is transferred to the client only when they physically grab the node
+        // (handled by MindMapNode.OnGrabbed → RequestOwnershipServerRpc).
+        GameObject spawnedObject = Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
+        NetworkObject networkObject = spawnedObject.GetComponent<NetworkObject>();
+        if (networkObject == null)
+        {
+            Debug.LogWarning($"Spawned object {spawnedObject.name} has no NetworkObject component!");
+            return;
+        }
+
+        networkObject.Spawn();
+        Debug.Log($"Server spawned node at {spawnPos} (owner: server until grabbed)");
     }
 }

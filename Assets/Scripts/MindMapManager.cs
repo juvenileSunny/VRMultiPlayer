@@ -407,8 +407,6 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
     // This gets called when 2 mind nodes are touched together, it creates a line connection between the 2 nodes, it goes both ways
     public void OnEventRaised(GameObject item1, GameObject item2)
     {
-        Debug.Log($"Connection event between {item1.name} and {item2.name}");
-
         // Handle with data structure
         string nodeId1 = mindMapData.GetNodeId(item1);
         string nodeId2 = mindMapData.GetNodeId(item2);
@@ -442,8 +440,8 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
     {
         GameObject newLine = Instantiate<GameObject>(connectionPrefab);
         
-        // Network spawn if in networked scene
-        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening)
+        // Only server can spawn network objects
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
         {
             NetworkObject networkObject = newLine.GetComponent<NetworkObject>();
             if (networkObject != null)
@@ -463,16 +461,14 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
         GameObject newLine = InstantiateConnection();
         MindMapConnection line = newLine.GetComponent<MindMapConnection>();
         
-        // Use SetNodes which handles both local and network sync
         if (line != null)
         {
             line.SetNodes(transform1, transform2);
         }
         else
         {
-            // Fallback for non-NetworkBehaviour version
-            line.pointA = transform1;
-            line.pointB = transform2;
+            // MindMapConnection script missing from connection prefab!
+            Debug.LogError("[MindMapManager] Connection prefab is missing the MindMapConnection component! Check the Inspector.");
         }
 
         visualConnections[connectionKey] = newLine;
@@ -501,7 +497,6 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
         string nodeId = EnsureNodeExists(nodeGameObject);
         if (!string.IsNullOrEmpty(nodeId))
         {
-            Debug.Log($"UpdateNodeText: Updating node {nodeGameObject.name} (ID: {nodeId}) text from '{mindMapData.GetNode(nodeId)?.text}' to '{cleanedText}' (original: '{newText}')");
             mindMapData.UpdateNodeText(nodeId, cleanedText);
             UpdateNodeLastInteractedBy(nodeId);
         }
