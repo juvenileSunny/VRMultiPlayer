@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Unity.Netcode;
+using Unity.Collections;
 
 public class MindMapNode : NetworkBehaviour
 {
@@ -51,6 +52,17 @@ public class MindMapNode : NetworkBehaviour
     // Used by MindMapConnection to resolve node transforms without GetComponentInChildren,
     // which fails when XR grab reparents the node under the XR controller attachment point.
     public static readonly Dictionary<ulong, MindMapNode> Registry = new Dictionary<ulong, MindMapNode>();
+
+    // NetworkVariables persist current state for late joiners — unlike ClientRpcs which are fire-and-forget.
+    // Any client that joins after text/color was set will automatically receive the current value.
+    private NetworkVariable<FixedString512Bytes> m_NodeText = new NetworkVariable<FixedString512Bytes>(
+        new FixedString512Bytes(""),
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server);
+    private NetworkVariable<Color> m_NodeColor = new NetworkVariable<Color>(
+        Color.white,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server);
 
     void Start()
     {
@@ -130,6 +142,16 @@ public class MindMapNode : NetworkBehaviour
         NetworkObject root = GetComponentInParent<NetworkObject>();
         if (root != null)
             Registry[root.NetworkObjectId] = this;
+
+        // Subscribe to NetworkVariable changes so all clients (including late joiners) stay in sync
+        m_NodeText.OnValueChanged += OnNodeTextChanged;
+        m_NodeColor.OnValueChanged += OnNodeColorChanged;
+
+        // Apply current values immediately — this is what late joiners receive on join
+        string currentText = m_NodeText.Value.ToString();
+        if (!string.IsNullOrEmpty(currentText))
+            ApplyTextChange(currentText);
+        ApplyColorChange(m_NodeColor.Value);
     }
 
     public override void OnNetworkDespawn()
@@ -138,6 +160,9 @@ public class MindMapNode : NetworkBehaviour
         NetworkObject root = GetComponentInParent<NetworkObject>();
         if (root != null)
             Registry.Remove(root.NetworkObjectId);
+
+        m_NodeText.OnValueChanged -= OnNodeTextChanged;
+        m_NodeColor.OnValueChanged -= OnNodeColorChanged;
     }
 
     void Update()
@@ -202,28 +227,24 @@ public class MindMapNode : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void UpdateTextServerRpc(string newText)
     {
-        UpdateTextClientRpc(newText);
+        // Setting the NetworkVariable replicates to all connected clients AND persists for late joiners.
+        // OnNodeTextChanged callback fires on all clients when they receive the new value.
+        m_NodeText.Value = new FixedString512Bytes(newText);
     }
-    
-    [ClientRpc]
-    private void UpdateTextClientRpc(string newText)
+
+    private void OnNodeTextChanged(FixedString512Bytes oldValue, FixedString512Bytes newValue)
     {
-        // Update visual (skip if this is the sender)
+        ApplyTextChange(newValue.ToString());
+    }
+
+    private void ApplyTextChange(string newText)
+    {
         if (nodeText != null && nodeText.text != newText)
-        {
             nodeText.text = newText;
-        }
-        
         if (inputFieldComponent != null && inputFieldComponent.text != newText)
-        {
             inputFieldComponent.text = newText;
-        }
-        
-        // Update data structure
         if (mapManager != null)
-        {
             mapManager.UpdateNodeText(gameObject, newText);
-        }
     }
     
     // Handle position changes
@@ -395,22 +416,41 @@ public class MindMapNode : NetworkBehaviour
     // Delete button functionality
     private void OnDeleteButtonClicked()
     {
-        Debug.Log($"Delete button clicked for node {gameObject.name}");
-
-        // Hide interaction panel
         if (interactionPanel != null)
-        {
             interactionPanel.SetActive(false);
-        }
 
-        // Remove all connections to this node via MindMapManager
-        if (mapManager != null)
+        bool isNetworked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+        if (isNetworked && IsSpawned)
         {
-            mapManager.RemoveAllConnectionsToNode(gameObject);
+            NetworkObject rootNetObj = GetComponentInParent<NetworkObject>();
+            if (rootNetObj != null)
+                DeleteNodeServerRpc(rootNetObj.NetworkObjectId);
         }
+        else
+        {
+            // Non-networked (tutorial) — clean up locally
+            if (mapManager != null)
+                mapManager.RemoveAllConnectionsToNode(gameObject);
+            NetworkObject rootNetObj = GetComponentInParent<NetworkObject>();
+            Destroy(rootNetObj != null ? rootNetObj.gameObject : gameObject);
+        }
+    }
 
-        // Destroy the node
-        Destroy(gameObject);
+    [ServerRpc(RequireOwnership = false)]
+    private void DeleteNodeServerRpc(ulong nodeNetworkId)
+    {
+        var spawnedObjects = NetworkManager.Singleton.SpawnManager.SpawnedObjects;
+        if (!spawnedObjects.TryGetValue(nodeNetworkId, out NetworkObject rootNetObj)) return;
+
+        // Use the MindMapNode child gameObject — that's what MindMapManager tracks
+        MindMapNode mindNode = rootNetObj.GetComponentInChildren<MindMapNode>(true);
+        GameObject nodeGO = mindNode != null ? mindNode.gameObject : rootNetObj.gameObject;
+
+        MindMapManager manager = mapManager != null ? mapManager : FindObjectOfType<MindMapManager>();
+        if (manager != null)
+            manager.RemoveAllConnectionsToNode(nodeGO);
+
+        rootNetObj.Despawn(true);
     }
 
     // Text button functionality - toggles text input field
@@ -486,13 +526,13 @@ public class MindMapNode : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void UpdateColorServerRpc(Color newColor)
     {
-        UpdateColorClientRpc(newColor);
+        // Setting the NetworkVariable replicates to all connected clients AND persists for late joiners.
+        m_NodeColor.Value = newColor;
     }
-    
-    [ClientRpc]
-    private void UpdateColorClientRpc(Color newColor)
+
+    private void OnNodeColorChanged(Color oldValue, Color newValue)
     {
-        ApplyColorChange(newColor);
+        ApplyColorChange(newValue);
     }
 
     // Helper method to restore original color

@@ -579,7 +579,7 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
                 var connectionKey = GetConnectionKey(nodeId1, nodeId2);
                 if (visualConnections.ContainsKey(connectionKey))
                 {
-                    Destroy(visualConnections[connectionKey]);
+                    DespawnOrDestroy(visualConnections[connectionKey]);
                     visualConnections.Remove(connectionKey);
                 }
             }
@@ -600,12 +600,27 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
                 var connectionKey = GetConnectionKey(nodeId, connectedId);
                 if (visualConnections.ContainsKey(connectionKey))
                 {
-                    Destroy(visualConnections[connectionKey]);
+                    DespawnOrDestroy(visualConnections[connectionKey]);
                     visualConnections.Remove(connectionKey);
                 }
             }
             mindMapData.RemoveNode(nodeId);
         }
+    }
+
+    // Despawn a networked GameObject on the server, or Destroy it locally if not networked
+    private void DespawnOrDestroy(GameObject go)
+    {
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+        {
+            NetworkObject netObj = go.GetComponent<NetworkObject>();
+            if (netObj != null && netObj.IsSpawned)
+            {
+                netObj.Despawn(true);
+                return;
+            }
+        }
+        Destroy(go);
     }
 
     // Helper method to create consistent connection keys

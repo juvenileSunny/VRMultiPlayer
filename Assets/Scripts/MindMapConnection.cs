@@ -206,22 +206,28 @@ public class MindMapConnection : NetworkBehaviour
     // Called when the remove button is clicked
     private void OnRemoveButtonClicked()
     {
-        Debug.Log("Remove button clicked for connection");
-
-        // Hide the button
         if (removeButton != null)
-        {
             removeButton.gameObject.SetActive(false);
-        }
 
-        // Call the remove function in MindMapManager
-        if (mapManager != null && pointA != null && pointB != null)
+        bool isNetworked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+        if (isNetworked && IsSpawned)
         {
-            mapManager.RemoveConnection(pointA.gameObject, pointB.gameObject);
+            DeleteConnectionServerRpc();
         }
         else
         {
-            Debug.LogError("Cannot remove connection: Missing MindMapManager or point references");
+            if (mapManager != null && pointA != null && pointB != null)
+                mapManager.RemoveConnection(pointA.gameObject, pointB.gameObject);
         }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void DeleteConnectionServerRpc()
+    {
+        MindMapManager manager = mapManager != null ? mapManager : FindObjectOfType<MindMapManager>();
+        if (manager != null && pointA != null && pointB != null)
+            manager.RemoveConnection(pointA.gameObject, pointB.gameObject);
+        else if (NetworkObject != null && NetworkObject.IsSpawned)
+            NetworkObject.Despawn(true); // fallback if manager lookup fails
     }
 }
