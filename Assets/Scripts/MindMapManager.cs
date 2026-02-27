@@ -118,9 +118,11 @@ public class MindMapData
         // Clean the text to remove invisible characters (call static method from MindMapManager)
         string cleanedText = MindMapManager.CleanText(text);
         
-        // Use NetworkObjectId if available for consistent IDs across clients, otherwise use GUID
+        // Use NetworkObjectId if available for consistent IDs across clients, otherwise use GUID.
+        // Use GetComponentInParent because NetworkObject lives on the root Node_W,
+        // not on the MindMapNode child gameObject passed in here.
         string id;
-        NetworkObject networkObject = gameObject.GetComponent<NetworkObject>();
+        NetworkObject networkObject = gameObject.GetComponentInParent<NetworkObject>();
         if (networkObject != null && networkObject.IsSpawned)
         {
             id = networkObject.NetworkObjectId.ToString();
