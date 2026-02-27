@@ -63,6 +63,11 @@ public class MindMapNode : NetworkBehaviour
         Color.white,
         NetworkVariableReadPermission.Everyone,
         NetworkVariableWritePermission.Server);
+    // Syncs whether the text label is visible on the node for all users
+    private NetworkVariable<bool> m_TextVisible = new NetworkVariable<bool>(
+        false,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server);
 
     void Start()
     {
@@ -146,12 +151,14 @@ public class MindMapNode : NetworkBehaviour
         // Subscribe to NetworkVariable changes so all clients (including late joiners) stay in sync
         m_NodeText.OnValueChanged += OnNodeTextChanged;
         m_NodeColor.OnValueChanged += OnNodeColorChanged;
+        m_TextVisible.OnValueChanged += OnTextVisibleChanged;
 
         // Apply current values immediately — this is what late joiners receive on join
         string currentText = m_NodeText.Value.ToString();
         if (!string.IsNullOrEmpty(currentText))
             ApplyTextChange(currentText);
         ApplyColorChange(m_NodeColor.Value);
+        ApplyTextVisibility(m_TextVisible.Value);
     }
 
     public override void OnNetworkDespawn()
@@ -163,6 +170,7 @@ public class MindMapNode : NetworkBehaviour
 
         m_NodeText.OnValueChanged -= OnNodeTextChanged;
         m_NodeColor.OnValueChanged -= OnNodeColorChanged;
+        m_TextVisible.OnValueChanged -= OnTextVisibleChanged;
     }
 
     void Update()
@@ -456,26 +464,43 @@ public class MindMapNode : NetworkBehaviour
     // Text button functionality - toggles text input field
     private void OnAddTextButtonClicked()
     {
-        Debug.Log($"Text button clicked for node {gameObject.name}");
-
         if (textInputField != null)
         {
             textInputActive = !textInputActive;
+
+            // The input field is local-only (only the editing user needs it)
             textInputField.SetActive(textInputActive);
-            
-            // When showing input field, populate it with current text
             if (textInputActive && inputFieldComponent != null)
             {
                 inputFieldComponent.text = GetNodeText();
-                inputFieldComponent.ActivateInputField(); // Focus the input field
+                inputFieldComponent.ActivateInputField();
             }
 
-            Debug.Log($"Text input field {(textInputActive ? "shown" : "hidden")}");
+            // Sync visibility to all clients via NetworkVariable
+            if (IsSpawned)
+                SetTextVisibleServerRpc(textInputActive);
         }
         else
         {
             Debug.LogWarning("No textInputField assigned to this node!");
         }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SetTextVisibleServerRpc(bool visible)
+    {
+        m_TextVisible.Value = visible;
+    }
+
+    private void OnTextVisibleChanged(bool oldValue, bool newValue)
+    {
+        ApplyTextVisibility(newValue);
+    }
+
+    private void ApplyTextVisibility(bool visible)
+    {
+        if (textInputField != null)
+            textInputField.SetActive(visible);
     }
 
     // Change color button functionality
