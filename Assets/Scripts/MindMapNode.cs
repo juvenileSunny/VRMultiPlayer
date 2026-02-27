@@ -139,6 +139,18 @@ public class MindMapNode : NetworkBehaviour
 
         // When this client grabs the node, request ownership so ClientNetworkTransform lets us move it
         interactable?.selectEntered.AddListener((args) => OnGrabbed());
+
+        // Apply synced NetworkVariable state now that all references are initialized.
+        // OnNetworkSpawn fires before Start(), so any Apply calls there would hit null references.
+        // Re-applying here is the reliable late-joiner path.
+        if (IsSpawned)
+        {
+            string currentText = m_NodeText.Value.ToString();
+            if (!string.IsNullOrEmpty(currentText))
+                ApplyTextChange(currentText);
+            ApplyColorChange(m_NodeColor.Value);
+            ApplyTextVisibility(m_TextVisible.Value);
+        }
     }
 
     public override void OnNetworkSpawn()
