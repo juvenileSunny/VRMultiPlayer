@@ -412,32 +412,35 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
     // This gets called when 2 mind nodes are touched together, it creates a line connection between the 2 nodes, it goes both ways
     public void OnEventRaised(GameObject item1, GameObject item2)
     {
-        // Handle with data structure
         string nodeId1 = mindMapData.GetNodeId(item1);
         string nodeId2 = mindMapData.GetNodeId(item2);
 
-        // Add nodes if they don't exist
         if (string.IsNullOrEmpty(nodeId1))
             nodeId1 = mindMapData.AddNode(item1);
         if (string.IsNullOrEmpty(nodeId2))
             nodeId2 = mindMapData.AddNode(item2);
 
-        // Check if already connected
         if (mindMapData.AreConnected(nodeId1, nodeId2))
         {
             Debug.Log("Connection already exists, skipping creation");
             return;
         }
 
-        // Add logical connection
         if (mindMapData.AddConnection(nodeId1, nodeId2))
         {
             CreateVisualConnection(nodeId1, nodeId2, item1.transform, item2.transform);
             Debug.Log($"Connection created between {nodeId1} and {nodeId2}");
-            // Update last interacted by for both nodes
-            UpdateNodeLastInteractedBy(nodeId1);
-            UpdateNodeLastInteractedBy(nodeId2);
         }
+    }
+
+    // Returns true if these two node GameObjects are already connected in the data.
+    // Used by RequestConnectionServerRpc to discard duplicate RPCs from other clients.
+    public bool AreNodesConnected(GameObject item1, GameObject item2)
+    {
+        string id1 = mindMapData.GetNodeId(item1);
+        string id2 = mindMapData.GetNodeId(item2);
+        if (string.IsNullOrEmpty(id1) || string.IsNullOrEmpty(id2)) return false;
+        return mindMapData.AreConnected(id1, id2);
     }
     
     // Helper method to create visual connection with proper setup
@@ -496,39 +499,26 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
     
     public void UpdateNodeText(GameObject nodeGameObject, string newText)
     {
-        // Clean the text to remove invisible characters
         string cleanedText = CleanText(newText);
-        
         string nodeId = EnsureNodeExists(nodeGameObject);
         if (!string.IsNullOrEmpty(nodeId))
-        {
             mindMapData.UpdateNodeText(nodeId, cleanedText);
-            UpdateNodeLastInteractedBy(nodeId);
-        }
         else
-        {
             Debug.LogWarning($"UpdateNodeText: Could not find or create node ID for GameObject {nodeGameObject.name}");
-        }
     }
 
     public void UpdateNodeColor(GameObject nodeGameObject, Color newColor)
     {
         string nodeId = EnsureNodeExists(nodeGameObject);
         if (!string.IsNullOrEmpty(nodeId))
-        {
             mindMapData.UpdateNodeColor(nodeId, newColor);
-            UpdateNodeLastInteractedBy(nodeId);
-        }
     }
 
     public void UpdateNodePosition(GameObject nodeGameObject, Vector3 newPosition)
     {
         string nodeId = EnsureNodeExists(nodeGameObject);
         if (!string.IsNullOrEmpty(nodeId))
-        {
             mindMapData.UpdateNodePosition(nodeId, newPosition);
-            UpdateNodeLastInteractedBy(nodeId);
-        }
     }
 
     public string GetNodeText(GameObject nodeGameObject)
@@ -665,20 +655,15 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
         return string.Compare(a, b) < 0 ? (a, b) : (b, a);
     }
 
-    // Helper method to update last interacted by field
-    private void UpdateNodeLastInteractedBy(string nodeId)
+    // Public overload used by ServerRpcs to record the correct client's serial number.
+    // Bypasses the local DataEcho lookup so the server logs who actually interacted.
+    public void UpdateLastInteractedBy(GameObject nodeGameObject, string serialNumber)
     {
-        if (string.IsNullOrEmpty(nodeId)) return;
-        
-        try
-        {
-            string serialNumber = DataEcho.SessionCollector.Instance.GetSerialNumber();
+        if (string.IsNullOrEmpty(serialNumber)) return;
+        string nodeId = mindMapData.GetNodeId(nodeGameObject);
+        if (string.IsNullOrEmpty(nodeId)) nodeId = EnsureNodeExists(nodeGameObject);
+        if (!string.IsNullOrEmpty(nodeId))
             mindMapData.UpdateLastInteractedBy(nodeId, serialNumber);
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogWarning($"Could not get serial number from DataEcho: {e.Message}");
-        }
     }
 
     // Save mind map data to file with timestamp

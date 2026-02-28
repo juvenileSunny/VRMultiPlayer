@@ -53,6 +53,31 @@ public class MindMapNode : NetworkBehaviour
     // which fails when XR grab reparents the node under the XR controller attachment point.
     public static readonly Dictionary<ulong, MindMapNode> Registry = new Dictionary<ulong, MindMapNode>();
 
+    // Cached serial so transient DataEcho failures don't silently fall back to the NetworkClientId number.
+    private static string s_cachedSerial = null;
+
+    // True while ApplyTextChange is writing to the input field so the onValueChanged callback
+    // doesn't fire a reflect-back RPC from the wrong client.
+    private bool m_syncingText = false;
+
+    // Gets this client's serial number from DataEcho, caches on first success.
+    // Falls back to LocalClientId string only if DataEcho is genuinely unavailable.
+    private string GetLocalSerialNumber()
+    {
+        if (!string.IsNullOrEmpty(s_cachedSerial)) return s_cachedSerial;
+        try
+        {
+            string s = DataEcho.SessionCollector.Instance.GetSerialNumber();
+            if (!string.IsNullOrEmpty(s))
+            {
+                s_cachedSerial = s;
+                return s;
+            }
+        }
+        catch { }
+        return NetworkManager.Singleton != null ? NetworkManager.Singleton.LocalClientId.ToString() : "unknown";
+    }
+
     // NetworkVariables persist current state for late joiners — unlike ClientRpcs which are fire-and-forget.
     // Any client that joins after text/color was set will automatically receive the current value.
     private NetworkVariable<FixedString512Bytes> m_NodeText = new NetworkVariable<FixedString512Bytes>(
@@ -207,13 +232,20 @@ public class MindMapNode : NetworkBehaviour
         connectionReady = true;
     }
 
-    // Request ownership when this client grabs the node
+    // Request ownership when this client grabs the node, and always record who grabbed it.
     private void OnGrabbed()
     {
-        if (IsSpawned && !IsOwner)
-        {
+        if (!IsSpawned) return;
+        if (!IsOwner)
             RequestOwnershipServerRpc(NetworkManager.Singleton.LocalClientId);
-        }
+        // Always stamp lastInteractedBy regardless of current ownership state.
+        NotifyGrabServerRpc(GetLocalSerialNumber());
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void NotifyGrabServerRpc(string serialNumber)
+    {
+        mapManager?.UpdateLastInteractedBy(gameObject, serialNumber);
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -242,19 +274,17 @@ public class MindMapNode : NetworkBehaviour
             mapManager.UpdateNodeText(gameObject, newText);
         }
         
-        // Sync to network if networked
-        if (IsSpawned)
-        {
-            UpdateTextServerRpc(newText);
-        }
+        // Sync to network if networked — skip if this change came from a NetworkVariable sync
+        // to avoid reflect-back RPCs from other clients overwriting lastInteractedBy.
+        if (IsSpawned && !m_syncingText)
+            UpdateTextServerRpc(newText, GetLocalSerialNumber());
     }
-    
+
     [ServerRpc(RequireOwnership = false)]
-    private void UpdateTextServerRpc(string newText)
+    private void UpdateTextServerRpc(string newText, string serialNumber)
     {
-        // Setting the NetworkVariable replicates to all connected clients AND persists for late joiners.
-        // OnNodeTextChanged callback fires on all clients when they receive the new value.
         m_NodeText.Value = new FixedString512Bytes(newText);
+        mapManager?.UpdateLastInteractedBy(gameObject, serialNumber);
     }
 
     private void OnNodeTextChanged(FixedString512Bytes oldValue, FixedString512Bytes newValue)
@@ -264,10 +294,12 @@ public class MindMapNode : NetworkBehaviour
 
     private void ApplyTextChange(string newText)
     {
+        m_syncingText = true;
         if (nodeText != null && nodeText.text != newText)
             nodeText.text = newText;
         if (inputFieldComponent != null && inputFieldComponent.text != newText)
             inputFieldComponent.text = newText;
+        m_syncingText = false;
         if (mapManager != null)
             mapManager.UpdateNodeText(gameObject, newText);
     }
@@ -332,7 +364,7 @@ public class MindMapNode : NetworkBehaviour
             NetworkObject myNetObj = GetComponentInParent<Unity.Netcode.NetworkObject>();
             NetworkObject otherNetObj = other.GetComponentInParent<Unity.Netcode.NetworkObject>();
             if (myNetObj != null && otherNetObj != null)
-                RequestConnectionServerRpc(myNetObj.NetworkObjectId, otherNetObj.NetworkObjectId);
+                RequestConnectionServerRpc(myNetObj.NetworkObjectId, otherNetObj.NetworkObjectId, GetLocalSerialNumber());
             else
                 Debug.LogWarning($"[MindMapNode] TryCreateConnection: Could not find NetworkObject on one or both nodes (myNetObj={myNetObj}, otherNetObj={otherNetObj})");
         }
@@ -344,35 +376,32 @@ public class MindMapNode : NetworkBehaviour
     }
     
     [Unity.Netcode.ServerRpc(RequireOwnership = false)]
-    private void RequestConnectionServerRpc(ulong nodeAId, ulong nodeBId)
+    private void RequestConnectionServerRpc(ulong nodeAId, ulong nodeBId, string serialNumber)
     {
-        // Server looks up the GameObjects and raises the connection event
         var spawnedObjects = Unity.Netcode.NetworkManager.Singleton.SpawnManager.SpawnedObjects;
 
         if (!spawnedObjects.TryGetValue(nodeAId, out Unity.Netcode.NetworkObject nodeA))
-        {
-            Debug.LogWarning($"[MindMapNode] Could not find spawned object with ID {nodeAId}");
-            return;
-        }
+        { Debug.LogWarning($"[MindMapNode] Could not find spawned object with ID {nodeAId}"); return; }
         if (!spawnedObjects.TryGetValue(nodeBId, out Unity.Netcode.NetworkObject nodeB))
-        {
-            Debug.LogWarning($"[MindMapNode] Could not find spawned object with ID {nodeBId}");
-            return;
-        }
+        { Debug.LogWarning($"[MindMapNode] Could not find spawned object with ID {nodeBId}"); return; }
 
         MindMapNode mindNodeA = nodeA.GetComponentInChildren<MindMapNode>();
         MindMapNode mindNodeB = nodeB.GetComponentInChildren<MindMapNode>();
-
         if (mindNodeA == null) { Debug.LogWarning($"[MindMapNode] No MindMapNode found in children of {nodeA.name}"); return; }
         if (mindNodeB == null) { Debug.LogWarning($"[MindMapNode] No MindMapNode found in children of {nodeB.name}"); return; }
 
-        // Re-find mapManager if null (can happen if Start() ran before MindMapManager was initialized)
         MindMapManager manager = mapManager != null ? mapManager : FindObjectOfType<MindMapManager>();
-        if (manager == null) { Debug.LogWarning($"[MindMapNode] mapManager is null and could not be found in scene!"); return; }
-        mapManager = manager; // cache it for future calls
+        if (manager == null) { Debug.LogWarning($"[MindMapNode] mapManager is null"); return; }
+        mapManager = manager;
 
-        // Directly call the manager instead of the event to avoid double-firing
+        // Discard duplicate RPCs — physics runs on all clients so every machine sends this
+        // when a collision is detected. Only the first RPC should create the connection.
+        if (manager.AreNodesConnected(mindNodeA.gameObject, mindNodeB.gameObject)) return;
+
         manager.OnEventRaised(mindNodeA.gameObject, mindNodeB.gameObject);
+        // Note: lastInteractedBy is NOT updated here. The node that was grabbed already has
+        // the correct serial set by NotifyGrabServerRpc before the collision happened.
+        // Stamping it here would overwrite with whoever's physics RPC arrived first (often the host).
     }
 
 
@@ -449,7 +478,7 @@ public class MindMapNode : NetworkBehaviour
         {
             NetworkObject rootNetObj = GetComponentInParent<NetworkObject>();
             if (rootNetObj != null)
-                DeleteNodeServerRpc(rootNetObj.NetworkObjectId);
+                DeleteNodeServerRpc(rootNetObj.NetworkObjectId, GetLocalSerialNumber());
         }
         else
         {
@@ -462,18 +491,20 @@ public class MindMapNode : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void DeleteNodeServerRpc(ulong nodeNetworkId)
+    private void DeleteNodeServerRpc(ulong nodeNetworkId, string serialNumber)
     {
         var spawnedObjects = NetworkManager.Singleton.SpawnManager.SpawnedObjects;
         if (!spawnedObjects.TryGetValue(nodeNetworkId, out NetworkObject rootNetObj)) return;
 
-        // Use the MindMapNode child gameObject — that's what MindMapManager tracks
         MindMapNode mindNode = rootNetObj.GetComponentInChildren<MindMapNode>(true);
         GameObject nodeGO = mindNode != null ? mindNode.gameObject : rootNetObj.gameObject;
 
         MindMapManager manager = mapManager != null ? mapManager : FindObjectOfType<MindMapManager>();
         if (manager != null)
+        {
+            manager.UpdateLastInteractedBy(nodeGO, serialNumber);
             manager.RemoveAllConnectionsToNode(nodeGO);
+        }
 
         rootNetObj.Despawn(true);
     }
@@ -489,13 +520,17 @@ public class MindMapNode : NetworkBehaviour
             textInputField.SetActive(textInputActive);
             if (textInputActive && inputFieldComponent != null)
             {
+                // Use m_syncingText so loading the current text into the field doesn't
+                // fire an unnecessary UpdateTextServerRpc before the user types anything.
+                m_syncingText = true;
                 inputFieldComponent.text = GetNodeText();
+                m_syncingText = false;
                 inputFieldComponent.ActivateInputField();
             }
 
             // Sync visibility to all clients via NetworkVariable
             if (IsSpawned)
-                SetTextVisibleServerRpc(textInputActive);
+                SetTextVisibleServerRpc(textInputActive, GetLocalSerialNumber());
         }
         else
         {
@@ -504,9 +539,10 @@ public class MindMapNode : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void SetTextVisibleServerRpc(bool visible)
+    private void SetTextVisibleServerRpc(bool visible, string serialNumber)
     {
         m_TextVisible.Value = visible;
+        mapManager?.UpdateLastInteractedBy(gameObject, serialNumber);
     }
 
     private void OnTextVisibleChanged(bool oldValue, bool newValue)
@@ -535,12 +571,10 @@ public class MindMapNode : NetworkBehaviour
             
             // Sync to network if networked
             if (IsSpawned)
-            {
-                UpdateColorServerRpc(newColor);
-            }
+                UpdateColorServerRpc(newColor, GetLocalSerialNumber());
         }
     }
-    
+
     private void ApplyColorChange(Color newColor)
     {
         // Update the visual representation
@@ -566,10 +600,10 @@ public class MindMapNode : NetworkBehaviour
     }
     
     [ServerRpc(RequireOwnership = false)]
-    private void UpdateColorServerRpc(Color newColor)
+    private void UpdateColorServerRpc(Color newColor, string serialNumber)
     {
-        // Setting the NetworkVariable replicates to all connected clients AND persists for late joiners.
         m_NodeColor.Value = newColor;
+        mapManager?.UpdateLastInteractedBy(gameObject, serialNumber);
     }
 
     private void OnNodeColorChanged(Color oldValue, Color newValue)
