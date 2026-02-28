@@ -66755,6 +66755,7 @@ MonoBehaviour:
   connectionPrefab: {fileID: 6367602590594287258, guid: ffe2b306876a45a4196bff408c1b99a3, type: 3}
   mindMapData:
     nodesList: []
+  enableLogging: 0
 --- !u!4 &1114636577
 Transform:
   m_ObjectHideFlags: 0
