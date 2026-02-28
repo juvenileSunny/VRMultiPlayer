@@ -21,13 +21,19 @@ public class MindMapConnection : NetworkBehaviour
     private ulong m_PendingNodeAId = 0;
     private ulong m_PendingNodeBId = 0;
 
+    void Awake()
+    {
+        mapManager = FindObjectOfType<MindMapManager>();
+    }
+
     void Start()
     {
         lineRenderer = GetComponent<LineRenderer>();
         lineRenderer.positionCount = 2;
 
-        // Find the MindMapManager in the scene
-        mapManager = FindObjectOfType<MindMapManager>();
+        // Fallback in case Awake ran before MindMapManager was initialized
+        if (mapManager == null)
+            mapManager = FindObjectOfType<MindMapManager>();
 
         // Add or get BoxCollider for raycast interaction
         boxCollider = GetComponent<BoxCollider>();
@@ -75,6 +81,11 @@ public class MindMapConnection : NetworkBehaviour
         base.OnNetworkDespawn();
         m_NodeA_NetworkId.OnValueChanged -= OnNodeIdsChanged;
         m_NodeB_NetworkId.OnValueChanged -= OnNodeIdsChanged;
+
+        // Remove connection from local data on all clients when the object is despawned.
+        // Server-side data is already cleaned up by RemoveAllConnectionsToNode/RemoveConnection.
+        if (!IsServer && pointA != null && pointB != null)
+            mapManager?.RemoveConnectionData(pointA.gameObject, pointB.gameObject);
     }
     
     // Called whenever either NetworkVariable changes - resolves the node transforms
@@ -179,6 +190,14 @@ public class MindMapConnection : NetworkBehaviour
         if (MindMapNode.Registry.TryGetValue(nodeBId, out MindMapNode mindNodeB))
             pointB = mindNodeB.transform;
         // else leave null — Update() retries next frame
+
+        // Once both points resolved, sync to local MindMapData so client data reflects connections.
+        // No-op on server (OnEventRaised already handles it) and safe to call multiple times.
+        if (!IsServer && pointA != null && pointB != null)
+        {
+            if (mapManager == null) mapManager = FindObjectOfType<MindMapManager>();
+            mapManager?.RegisterConnectionData(pointA.gameObject, pointB.gameObject);
+        }
     }
 
     // Update the BoxCollider to match the line

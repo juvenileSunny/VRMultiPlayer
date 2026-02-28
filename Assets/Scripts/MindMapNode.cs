@@ -183,6 +183,11 @@ public class MindMapNode : NetworkBehaviour
         m_NodeText.OnValueChanged -= OnNodeTextChanged;
         m_NodeColor.OnValueChanged -= OnNodeColorChanged;
         m_TextVisible.OnValueChanged -= OnTextVisibleChanged;
+
+        // Remove node from local data on all clients when despawned.
+        // Server-side data is already cleaned up by DeleteNodeServerRpc → RemoveAllConnectionsToNode.
+        if (!IsServer)
+            mapManager?.RemoveNodeData(gameObject);
     }
 
     void Update()

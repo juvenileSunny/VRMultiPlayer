@@ -240,6 +240,8 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
     private Dictionary<(string, string), GameObject> visualConnections;
 
     // Auto-save settings
+    [Tooltip("Enable to save mind map data to disk. Enable only on the server build, disable on client builds.")]
+    public bool enableLogging = false;
     private float autoSaveInterval = 0.1f; // Save every 0.1 seconds
     private float lastSaveTime = 0f;
     private string saveDirectory = "MindMapSaves";
@@ -314,7 +316,8 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
         // Auto-save functionality
         if (Time.time - lastSaveTime >= autoSaveInterval)
         {
-            SaveMindMapData();
+            if (enableLogging)
+                SaveMindMapData();
             lastSaveTime = Time.time;
         }
 
@@ -623,6 +626,37 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
             }
         }
         Destroy(go);
+    }
+
+    // Data-only node removal — removes from local MindMapData without despawning the GameObject.
+    // Used on clients since the server already handles full cleanup via RemoveAllConnectionsToNode.
+    public void RemoveNodeData(GameObject nodeGameObject)
+    {
+        string nodeId = mindMapData.GetNodeId(nodeGameObject);
+        if (!string.IsNullOrEmpty(nodeId))
+            mindMapData.RemoveNode(nodeId);
+    }
+
+    // Data-only connection registration — adds nodes and connection to local MindMapData without
+    // spawning any visual. Used on clients to keep their data in sync with the server.
+    public void RegisterConnectionData(GameObject item1, GameObject item2)
+    {
+        if (item1 == null || item2 == null) return;
+        string nodeId1 = mindMapData.GetNodeId(item1);
+        string nodeId2 = mindMapData.GetNodeId(item2);
+        if (string.IsNullOrEmpty(nodeId1)) nodeId1 = mindMapData.AddNode(item1);
+        if (string.IsNullOrEmpty(nodeId2)) nodeId2 = mindMapData.AddNode(item2);
+        mindMapData.AddConnection(nodeId1, nodeId2); // no-op if already connected
+    }
+
+    // Data-only connection removal — removes from local MindMapData without despawning the visual.
+    public void RemoveConnectionData(GameObject item1, GameObject item2)
+    {
+        if (item1 == null || item2 == null) return;
+        string nodeId1 = mindMapData.GetNodeId(item1);
+        string nodeId2 = mindMapData.GetNodeId(item2);
+        if (!string.IsNullOrEmpty(nodeId1) && !string.IsNullOrEmpty(nodeId2))
+            mindMapData.RemoveConnection(nodeId1, nodeId2);
     }
 
     // Helper method to create consistent connection keys
