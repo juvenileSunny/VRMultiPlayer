@@ -9,29 +9,21 @@ public class SlideNetworkController : NetworkBehaviour
     [Header("References")]
     public SlideShowManager slideShow;
 
-    [Tooltip("HostAuthority that stores the HostClientId (for QuickJoin host UI visibility + permission)")]
-    public HostAuthority host;
+    [Header("Host Authority (optional)")]
+    public HostAuthority host; // if you use HostAuthority-based UI visibility
 
-    [Header("Auto-play safety")]
-    [Tooltip("How long to wait for TTS audio to START after a slide is shown.")]
+    [Header("Auto-play safety (server only)")]
+    [Tooltip("How long to wait for host TTS audio to START after a slide is shown.")]
     public float waitForSpeechStartSeconds = 5f;
 
-    [Tooltip("Minimum time to stay on each slide even if speech fails.")]
+    [Tooltip("Minimum time to stay on each slide even if speech ends instantly.")]
     public float minimumSlideDwellSeconds = 1f;
 
-    private NetworkVariable<int> slideIndex =
-        new NetworkVariable<int>(
-            0,
-            NetworkVariableReadPermission.Everyone,
-            NetworkVariableWritePermission.Server
-        );
+    private readonly NetworkVariable<int> slideIndex =
+        new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    private NetworkVariable<LectureState> lectureState =
-        new NetworkVariable<LectureState>(
-            LectureState.Stopped,
-            NetworkVariableReadPermission.Everyone,
-            NetworkVariableWritePermission.Server
-        );
+    private readonly NetworkVariable<LectureState> lectureState =
+        new NetworkVariable<LectureState>(LectureState.Stopped, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     private Coroutine serverAutoRoutine;
 
@@ -43,195 +35,178 @@ public class SlideNetworkController : NetworkBehaviour
             return;
         }
 
-        // Hook changes
-        slideIndex.OnValueChanged += (_, n) => ApplySlide(n);
-        lectureState.OnValueChanged += (_, n) => ApplyState(n);
+        // Subscribe first
+        slideIndex.OnValueChanged += OnSlideIndexChanged;
+        lectureState.OnValueChanged += OnLectureStateChanged;
 
-        // Late joiner: apply current state immediately
-        ApplySlide(slideIndex.Value);
-        ApplyState(lectureState.Value);
+        // Then apply current state for late joiners (and host)
+        StartCoroutine(ApplyInitialStateNextFrame());
 
-        // If server already playing, resume autoplay
         if (IsServer && lectureState.Value == LectureState.Playing)
             StartServerAutoIfNeeded();
-
-        // Debug info (helpful while you wire HostAuthority)
-        if (NetworkManager.Singleton != null)
-        {
-            ulong localId = NetworkManager.Singleton.LocalClientId;
-            ulong hostId = (host != null) ? host.HostClientId.Value : 999;
-            Debug.Log($"[SlideNetworkController] Spawned. IsServer={IsServer} LocalId={localId} HostId={hostId} SlideCount={slideShow.SlideCount}");
-        }
     }
 
-    // ==========================
-    // APPLY (runs on all peers)
-    // ==========================
+    public override void OnNetworkDespawn()
+    {
+        slideIndex.OnValueChanged -= OnSlideIndexChanged;
+        lectureState.OnValueChanged -= OnLectureStateChanged;
+
+        StopServerAuto();
+        base.OnNetworkDespawn();
+    }
+
+    IEnumerator ApplyInitialStateNextFrame()
+    {
+        // IMPORTANT for HMD builds: UI refs sometimes initialize a frame later
+        yield return null;
+
+        ApplySlide(slideIndex.Value);
+        ApplyState(lectureState.Value);
+    }
+
+    void OnSlideIndexChanged(int oldValue, int newValue) => ApplySlide(newValue);
+    void OnLectureStateChanged(LectureState oldValue, LectureState newValue) => ApplyState(newValue);
+
     void ApplySlide(int idx)
     {
         if (slideShow == null) return;
+        if (slideShow.SlideCount <= 0) return;
+
+        idx = Mathf.Clamp(idx, 0, slideShow.SlideCount - 1);
 
         bool speak = (lectureState.Value == LectureState.Playing);
+
+        // Every device updates its own UI locally from the same index
         slideShow.ShowSlide(idx, speak);
+
+        Debug.Log($"[SlideNetworkController] ApplySlide idx={idx} " +
+                  $"LocalClientId={NetworkManager.Singleton.LocalClientId} IsServer={IsServer} IsHost={NetworkManager.Singleton.IsHost}");
     }
 
     void ApplyState(LectureState state)
     {
         if (slideShow == null) return;
 
-        if (state == LectureState.Paused)
-            slideShow.PauseSpeech();
-        else if (state == LectureState.Playing)
-            slideShow.ResumeSpeech();
-        else // Stopped or Finished
-            slideShow.StopSpeech();
+        switch (state)
+        {
+            case LectureState.Playing:
+                // If resumed mid-slide, resume audio
+                slideShow.ResumeSpeech();
+                break;
+
+            case LectureState.Paused:
+                slideShow.PauseSpeech();
+                break;
+
+            default: // Stopped or Finished
+                slideShow.StopSpeech();
+                break;
+        }
+
+        Debug.Log($"[SlideNetworkController] ApplyState {state} LocalClientId={NetworkManager.Singleton.LocalClientId}");
     }
 
-    // ==========================
-    // AUTHORIZATION
-    // ==========================
-    bool IsAuthorized(ulong senderClientId)
-    {
-        // If HostAuthority not wired yet, fall back to server
-        if (host == null)
-            return senderClientId == NetworkManager.ServerClientId;
+    // =========================================================
+    // PUBLIC BUTTON CALLS (work from host UI)
+    // These call server even if local player isn't "IsServer"
+    // =========================================================
 
-        return senderClientId == host.HostClientId.Value;
-    }
-
-    // ==========================
-    // UI BUTTON CALLS (can be called from any peer)
-    // ==========================
     public void HostStart()
     {
-        if (IsServer) DoStart();
-        else StartServerRpc();
+        if (!CanLocalControl()) return;
+        RequestStartServerRpc();
     }
 
     public void HostPause()
     {
-        if (IsServer) DoPause();
-        else PauseServerRpc();
+        if (!CanLocalControl()) return;
+        RequestPauseServerRpc();
     }
 
     public void HostResume()
     {
-        if (IsServer) DoResume();
-        else ResumeServerRpc();
+        if (!CanLocalControl()) return;
+        RequestResumeServerRpc();
     }
 
     public void HostFinish()
     {
-        if (IsServer) DoFinish();
-        else FinishServerRpc();
+        if (!CanLocalControl()) return;
+        RequestFinishServerRpc();
     }
 
     public void HostNext()
     {
-        if (IsServer) DoNext();
-        else NextServerRpc();
+        if (!CanLocalControl()) return;
+        RequestNextServerRpc();
     }
 
     public void HostPrevious()
     {
-        if (IsServer) DoPrevious();
-        else PreviousServerRpc();
+        if (!CanLocalControl()) return;
+        RequestPrevServerRpc();
     }
 
-    // ==========================
-    // SERVER RPCs (enforce host permission)
-    // ==========================
-    [ServerRpc(RequireOwnership = false)]
-    void StartServerRpc(ServerRpcParams rpcParams = default)
+    bool CanLocalControl()
     {
-        if (!IsAuthorized(rpcParams.Receive.SenderClientId)) return;
-        DoStart();
+        // If you use HostAuthority, prefer it.
+        // Otherwise fallback to NGO host/server.
+        if (host != null)
+            return host.IsLocalHost;
+
+        return NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost;
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    void PauseServerRpc(ServerRpcParams rpcParams = default)
-    {
-        if (!IsAuthorized(rpcParams.Receive.SenderClientId)) return;
-        DoPause();
-    }
+    // ======================
+    // SERVER RPCs
+    // ======================
 
     [ServerRpc(RequireOwnership = false)]
-    void ResumeServerRpc(ServerRpcParams rpcParams = default)
+    void RequestStartServerRpc()
     {
-        if (!IsAuthorized(rpcParams.Receive.SenderClientId)) return;
-        DoResume();
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    void FinishServerRpc(ServerRpcParams rpcParams = default)
-    {
-        if (!IsAuthorized(rpcParams.Receive.SenderClientId)) return;
-        DoFinish();
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    void NextServerRpc(ServerRpcParams rpcParams = default)
-    {
-        if (!IsAuthorized(rpcParams.Receive.SenderClientId)) return;
-        DoNext();
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    void PreviousServerRpc(ServerRpcParams rpcParams = default)
-    {
-        if (!IsAuthorized(rpcParams.Receive.SenderClientId)) return;
-        DoPrevious();
-    }
-
-    // ==========================
-    // SERVER LOGIC (ONLY server mutates NetworkVariables)
-    // ==========================
-    void DoStart()
-    {
-        if (slideShow == null || slideShow.SlideCount <= 0)
-        {
-            Debug.LogError("[SlideNetworkController] No slides to play. Check SlideShowConfig.");
-            return;
-        }
-
         lectureState.Value = LectureState.Playing;
 
-        // Re-apply current slide so TTS triggers reliably
+        // re-trigger speaking on all devices by "touching" current slide index
+        // easiest is to reassign same value (NGO won't fire OnValueChanged if same)
+        // so we explicitly ApplySlide on server AND clients will already be at same index.
+        // But for clients to re-speak, SlideShowManager already speaks on ShowSlide.
+        // We can force a refresh by bumping and returning if >1 slides, otherwise just ApplySlide.
         ApplySlide(slideIndex.Value);
 
         StartServerAutoIfNeeded();
     }
 
-    void DoPause()
+    [ServerRpc(RequireOwnership = false)]
+    void RequestPauseServerRpc()
     {
         lectureState.Value = LectureState.Paused;
         StopServerAuto();
     }
 
-    void DoResume()
+    [ServerRpc(RequireOwnership = false)]
+    void RequestResumeServerRpc()
     {
         lectureState.Value = LectureState.Playing;
 
-        // Re-trigger speech for current slide
+        // re-trigger speech on current slide (important if audio got stopped)
         ApplySlide(slideIndex.Value);
 
         StartServerAutoIfNeeded();
     }
 
-    void DoFinish()
+    [ServerRpc(RequireOwnership = false)]
+    void RequestFinishServerRpc()
     {
         lectureState.Value = LectureState.Finished;
         StopServerAuto();
-
-        if (slideShow != null)
-            slideShow.StopSpeech();
     }
 
-    void DoNext()
+    [ServerRpc(RequireOwnership = false)]
+    void RequestNextServerRpc()
     {
-        if (slideShow == null || slideShow.SlideCount <= 0) return;
-
         StopServerAuto();
+
+        if (slideShow == null || slideShow.SlideCount <= 0) return;
 
         int next = Mathf.Clamp(slideIndex.Value + 1, 0, slideShow.SlideCount - 1);
         slideIndex.Value = next;
@@ -240,11 +215,12 @@ public class SlideNetworkController : NetworkBehaviour
             StartServerAutoIfNeeded();
     }
 
-    void DoPrevious()
+    [ServerRpc(RequireOwnership = false)]
+    void RequestPrevServerRpc()
     {
-        if (slideShow == null || slideShow.SlideCount <= 0) return;
-
         StopServerAuto();
+
+        if (slideShow == null || slideShow.SlideCount <= 0) return;
 
         int prev = Mathf.Clamp(slideIndex.Value - 1, 0, slideShow.SlideCount - 1);
         slideIndex.Value = prev;
@@ -254,16 +230,13 @@ public class SlideNetworkController : NetworkBehaviour
     }
 
     // ==========================
-    // AUTOPLAY (SERVER ONLY)
+    // Auto-play (SERVER ONLY)
     // ==========================
+
     void StartServerAutoIfNeeded()
     {
         if (!IsServer) return;
         if (serverAutoRoutine != null) return;
-
-        // Only autoplay while playing
-        if (lectureState.Value != LectureState.Playing) return;
-
         serverAutoRoutine = StartCoroutine(ServerAutoPlay());
     }
 
@@ -282,14 +255,14 @@ public class SlideNetworkController : NetworkBehaviour
         {
             float dwellStart = Time.time;
 
-            // 1) Wait for speech to START (prevents instant skipping if TTS fails)
+            // Wait for host speech to START, otherwise pause autoplay to prevent fast skipping.
             bool started = false;
             float t0 = Time.time;
-
             while (Time.time - t0 < waitForSpeechStartSeconds)
             {
                 if (lectureState.Value != LectureState.Playing) break;
 
+                // IMPORTANT: this checks host's audio only (server side)
                 if (slideShow != null && slideShow.IsSpeaking)
                 {
                     started = true;
@@ -298,20 +271,19 @@ public class SlideNetworkController : NetworkBehaviour
                 yield return null;
             }
 
-            // If speech didn't start, PAUSE (don’t fast-skip)
             if (!started)
             {
-                Debug.LogWarning("[SlideNetworkController] Speech did NOT start on server. Autoplay paused to prevent fast skipping. Fix TTS/audio on host.");
+                Debug.LogWarning("[SlideNetworkController] Host speech did NOT start. Autoplay paused to prevent skipping. Fix host TTS/audio.");
                 lectureState.Value = LectureState.Paused;
                 serverAutoRoutine = null;
                 yield break;
             }
 
-            // 2) Wait until speech finishes
+            // Wait until host finishes speaking
             while (lectureState.Value == LectureState.Playing && slideShow != null && slideShow.IsSpeaking)
                 yield return null;
 
-            // Minimum dwell safeguard
+            // Minimum dwell
             float elapsed = Time.time - dwellStart;
             if (elapsed < minimumSlideDwellSeconds)
                 yield return new WaitForSeconds(minimumSlideDwellSeconds - elapsed);
@@ -319,12 +291,8 @@ public class SlideNetworkController : NetworkBehaviour
             if (lectureState.Value != LectureState.Playing)
                 break;
 
-            // 3) Advance or finish
-            if (slideShow == null || slideShow.SlideCount <= 0)
-            {
-                lectureState.Value = LectureState.Finished;
-                break;
-            }
+            // Advance or finish
+            if (slideShow == null || slideShow.SlideCount <= 0) break;
 
             if (slideIndex.Value >= slideShow.SlideCount - 1)
             {
