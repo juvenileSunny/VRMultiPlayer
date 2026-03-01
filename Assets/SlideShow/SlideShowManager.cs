@@ -14,56 +14,70 @@ public class SlideShowManager : MonoBehaviour
 
     [Header("TTS")]
     public SlideTTSAgent slideTTSAgent;
-    public bool speakOnShow = true;
 
-    private int currentSlide = 0;
+    public int CurrentSlideIndex { get; private set; } = 0;
 
-    public void ShowSlide(int index)
+    public int SlideCount =>
+        (slideShowConfig != null && slideShowConfig.slides != null)
+            ? slideShowConfig.slides.Length
+            : 0;
+
+    public void ShowSlide(int index, bool speak)
     {
-        if (slideShowConfig == null ||
-            slideShowConfig.slides == null ||
-            index < 0 ||
-            index >= slideShowConfig.slides.Length)
-            return;
+        if (SlideCount <= 0) return;
 
-        currentSlide = index;
+        index = Mathf.Clamp(index, 0, SlideCount - 1);
+        CurrentSlideIndex = index;
 
         var slide = slideShowConfig.slides[index];
 
-        // Update UI
-        slideTitle.text = slide.title ?? "";
-        slideTranscript.text = slide.content ?? "";
+        if (slideTitle) slideTitle.text = slide.title ?? "";
+        if (slideTranscript) slideTranscript.text = slide.content ?? "";
 
-        if (slide.slideImage != null)
+        if (slideImage)
         {
-            slideImage.sprite = slide.slideImage;
-            slideImage.enabled = true;
-            slideImage.preserveAspect = true;
-        }
-        else
-        {
-            slideImage.enabled = false;
+            if (slide.slideImage != null)
+            {
+                slideImage.sprite = slide.slideImage;
+                slideImage.enabled = true;
+                slideImage.preserveAspect = true;
+            }
+            else
+            {
+                slideImage.enabled = false;
+            }
         }
 
-        // Handle speech
         if (slideTTSAgent != null)
         {
             slideTTSAgent.StopSpeaking();
 
-            if (speakOnShow && !string.IsNullOrWhiteSpace(slide.content))
-            {
+            if (speak && !string.IsNullOrWhiteSpace(slide.content))
                 slideTTSAgent.Speak(slide.content);
-            }
         }
     }
 
-    public void NextSlide()
+    public string GetSlideText(int index)
     {
-        ShowSlide(currentSlide + 1);
+        if (SlideCount <= 0) return "";
+        index = Mathf.Clamp(index, 0, SlideCount - 1);
+        return slideShowConfig.slides[index].content ?? "";
     }
 
-    public void PreviousSlide()
+    public bool IsSpeaking => slideTTSAgent != null && slideTTSAgent.IsSpeaking;
+
+    public void PauseSpeech()
     {
-        ShowSlide(currentSlide - 1);
+        if (slideTTSAgent != null) slideTTSAgent.PauseSpeaking();
+    }
+
+    public void ResumeSpeech()
+    {
+        if (slideTTSAgent != null) slideTTSAgent.ResumeSpeaking();
+    }
+
+    public void StopSpeech()
+    {
+        if (slideTTSAgent != null) slideTTSAgent.StopSpeaking();
     }
 }

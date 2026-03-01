@@ -150,24 +150,24 @@ namespace XRMultiplayer.MiniGames
             Debug.Log("Game officially started.");
         }
 
-        public override void FinishGame(bool submitScore = true)
-        {
-            base.FinishGame(submitScore);
-            gameStarted = false;
+        // public override void FinishGame(bool submitScore = true)
+        // {
+        //     base.FinishGame(submitScore);
+        //     gameStarted = false;
 
-            foreach (var obj in objectsToDeactivateOnGameFinish)
-                if (obj != null) obj.SetActive(false);
+        //     foreach (var obj in objectsToDeactivateOnGameFinish)
+        //         if (obj != null) obj.SetActive(false);
 
-            foreach (var obj in objectsToActivateOnGameFinish)
-                if (obj != null) obj.SetActive(true);
+        //     foreach (var obj in objectsToActivateOnGameFinish)
+        //         if (obj != null) obj.SetActive(true);
             
 
-            foreach (var kvp in playerJoinTimes)
-            {
-                playerDurations[kvp.Key] = Time.time - kvp.Value;
-                Debug.Log($"Player {kvp.Key} session duration: {playerDurations[kvp.Key]:F2}s");
-            }
-        }
+        //     foreach (var kvp in playerJoinTimes)
+        //     {
+        //         playerDurations[kvp.Key] = Time.time - kvp.Value;
+        //         Debug.Log($"Player {kvp.Key} session duration: {playerDurations[kvp.Key]:F2}s");
+        //     }
+        // }
 
         public void LocalPlayerJoined(string playerId)
         {

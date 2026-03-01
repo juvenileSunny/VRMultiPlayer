@@ -7,6 +7,7 @@ using Unity.XR.CoreUtils.Bindings.Variables;
 using UnityEngine;
 using Unity.Services.Lobbies;
 using UnityEditor;
+using Unity.Services.Authentication;
 
 namespace XRMultiplayer
 {
@@ -514,7 +515,10 @@ namespace XRMultiplayer
                 ConnectedRoomCode = m_LobbyManager.connectedLobby.LobbyCode;
                 ConnectedRoomName.Value = m_LobbyManager.connectedLobby.Name;
 
-                if (m_LobbyManager.connectedLobby.HostId == AuthenicationId)
+                string myPlayerId = AuthenticationService.Instance.PlayerId;
+                Debug.Log($"[HOST CHECK] LobbyHostId={m_LobbyManager.connectedLobby.HostId} | MyPlayerId={myPlayerId}");
+
+                if (m_LobbyManager.connectedLobby.HostId == myPlayerId)
                 {
                     connected = NetworkManager.Singleton.StartHost();
                 }

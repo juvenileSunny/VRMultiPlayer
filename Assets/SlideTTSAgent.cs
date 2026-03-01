@@ -8,14 +8,14 @@ public class BlendShapeTarget
 {
     public SkinnedMeshRenderer skinnedMesh;
     public string blendShapeName;
-    [Range(0f, 0.1f)] public float maxWeight = 0.001f;
+    [Range(0f, 100f)] public float maxWeight = 10f; // weight in blendshape units (0..100)
     [HideInInspector] public int blendShapeIndex = -1;
 }
 
 public class SlideTTSAgent : MonoBehaviour
 {
-    [Header("TTS HTTP Endpoint")]
-    public string ttsUrl = "http://127.0.0.1:5005/tts";
+    [Header("TTS HTTP Endpoint (PC IP, not 127.0.0.1 on Quest)")]
+    public string ttsUrl = "http://192.168.1.25:5005/tts";
 
     [Header("Audio")]
     public AudioSource audioSource;
@@ -31,20 +31,21 @@ public class SlideTTSAgent : MonoBehaviour
     private float[] _sampleData = new float[1024];
 
     public bool IsSpeaking => audioSource != null && audioSource.isPlaying;
-    public bool endOfSpeech => _speakRoutine == null;
+    public bool IsPaused => audioSource != null && audioSource.clip != null && !audioSource.isPlaying && audioSource.time > 0f;
+    public bool EndOfSpeech => _speakRoutine == null && (audioSource == null || !audioSource.isPlaying);
 
     void Start()
     {
         // Cache blendshape indices
         foreach (var target in blendShapeTargets)
         {
-            if (target.skinnedMesh != null && !string.IsNullOrEmpty(target.blendShapeName))
+            if (target.skinnedMesh != null &&
+                target.skinnedMesh.sharedMesh != null &&
+                !string.IsNullOrEmpty(target.blendShapeName))
             {
-                target.blendShapeIndex =
-                    target.skinnedMesh.sharedMesh.GetBlendShapeIndex(target.blendShapeName);
-
-                if (target.blendShapeIndex == -1)
-                    Debug.LogWarning($"BlendShape '{target.blendShapeName}' not found on {target.skinnedMesh.name}");
+                target.blendShapeIndex = target.skinnedMesh.sharedMesh.GetBlendShapeIndex(target.blendShapeName);
+                if (target.blendShapeIndex < 0)
+                    Debug.LogWarning($"[SlideTTSAgent] BlendShape '{target.blendShapeName}' not found on {target.skinnedMesh.name}");
             }
         }
     }
@@ -53,45 +54,44 @@ public class SlideTTSAgent : MonoBehaviour
     {
         if (audioSource != null && audioSource.isPlaying && blendShapeTargets.Count > 0)
         {
-            float loudness = GetCurrentAmplitude();
-            ApplyBlendShapes(loudness);
+            float amp = GetCurrentAmplitude(); // 0..1-ish
+            ApplyBlendShapes(amp);
+        }
+        else
+        {
+            // relax mouth when not speaking
+            ApplyBlendShapes(0f);
         }
     }
 
     float GetCurrentAmplitude()
     {
+        if (audioSource == null) return 0f;
         audioSource.GetOutputData(_sampleData, 0);
-
         float sum = 0f;
         for (int i = 0; i < _sampleData.Length; i++)
             sum += _sampleData[i] * _sampleData[i];
 
-        return Mathf.Clamp01(Mathf.Sqrt(sum / _sampleData.Length) * 10f);
+        float rms = Mathf.Sqrt(sum / _sampleData.Length);
+        // scale a bit; tune if needed
+        return Mathf.Clamp01(rms * 10f);
     }
 
-    void ApplyBlendShapes(float amplitude)
+    void ApplyBlendShapes(float amplitude01)
     {
         foreach (var target in blendShapeTargets)
         {
-            if (target.skinnedMesh == null || target.blendShapeIndex == -1)
-                continue;
-
-            float weight = amplitude * target.maxWeight * 100f;
-            target.skinnedMesh.SetBlendShapeWeight(target.blendShapeIndex, weight);
+            if (target.skinnedMesh == null || target.blendShapeIndex < 0) continue;
+            float w = amplitude01 * target.maxWeight;
+            target.skinnedMesh.SetBlendShapeWeight(target.blendShapeIndex, w);
         }
     }
 
     public void Speak(string text)
     {
-        Debug.Log("TTS Requested: " + text);
+        if (string.IsNullOrWhiteSpace(text)) return;
 
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            Debug.LogWarning("TTS called with empty text. Ignoring.");
-            return;
-        }
-
-        if (interruptOnNewSpeak && _speakRoutine != null)
+        if (interruptOnNewSpeak)
             StopSpeaking();
 
         _speakRoutine = StartCoroutine(SendToTTS(text));
@@ -105,23 +105,35 @@ public class SlideTTSAgent : MonoBehaviour
             _speakRoutine = null;
         }
 
-        if (audioSource != null && audioSource.isPlaying)
+        if (audioSource != null)
+        {
             audioSource.Stop();
+            audioSource.clip = null;
+        }
+    }
+
+    public void PauseSpeaking()
+    {
+        if (audioSource != null && audioSource.isPlaying)
+            audioSource.Pause();
+    }
+
+    public void ResumeSpeaking()
+    {
+        if (audioSource != null && audioSource.clip != null && !audioSource.isPlaying)
+            audioSource.UnPause();
     }
 
     IEnumerator SendToTTS(string text)
     {
         if (audioSource == null)
         {
-            Debug.LogError("AudioSource is not assigned.");
+            Debug.LogError("[SlideTTSAgent] AudioSource is not assigned.");
+            _speakRoutine = null;
             yield break;
         }
 
-        string escaped = EscapeJson(text);
-        string json = "{\"text\":\"" + escaped + "\"}";
-
-        Debug.Log("Sending JSON: " + json);
-
+        string json = "{\"text\":\"" + EscapeJson(text) + "\"}";
         byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
 
         using (UnityWebRequest request = new UnityWebRequest(ttsUrl, "POST"))
@@ -135,25 +147,25 @@ public class SlideTTSAgent : MonoBehaviour
 
             if (request.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError("TTS HTTP Error: " + request.downloadHandler.text);
+                // This helps debug your Flask 400:
+                string body = request.downloadHandler != null ? request.downloadHandler.text : "(no body)";
+                Debug.LogError($"[SlideTTSAgent] TTS Error: {request.responseCode} {request.error}\nBody: {body}\nURL: {ttsUrl}");
                 _speakRoutine = null;
                 yield break;
             }
 
             byte[] audioData = request.downloadHandler.data;
-
             if (audioData == null || audioData.Length == 0)
             {
-                Debug.LogError("TTS returned empty audio.");
+                Debug.LogError("[SlideTTSAgent] TTS returned empty audio.");
                 _speakRoutine = null;
                 yield break;
             }
 
             WAV wav = new WAV(audioData);
-
             if (wav.SampleCount <= 0 || wav.Frequency <= 0 || wav.LeftChannel == null)
             {
-                Debug.LogError("Invalid WAV data.");
+                Debug.LogError("[SlideTTSAgent] Invalid WAV data.");
                 _speakRoutine = null;
                 yield break;
             }
@@ -163,6 +175,10 @@ public class SlideTTSAgent : MonoBehaviour
 
             audioSource.clip = clip;
             audioSource.Play();
+
+            // Wait until playback finishes or gets stopped
+            while (audioSource != null && audioSource.isPlaying)
+                yield return null;
         }
 
         _speakRoutine = null;
@@ -171,12 +187,10 @@ public class SlideTTSAgent : MonoBehaviour
     string EscapeJson(string input)
     {
         if (string.IsNullOrEmpty(input)) return "";
-
-        return input
-            .Replace("\\", "\\\\")
-            .Replace("\"", "\\\"")
-            .Replace("\n", "\\n")
-            .Replace("\r", "")
-            .Replace("\t", "\\t");
+        return input.Replace("\\", "\\\\")
+                    .Replace("\"", "\\\"")
+                    .Replace("\n", "\\n")
+                    .Replace("\r", "")
+                    .Replace("\t", "\\t");
     }
 }
