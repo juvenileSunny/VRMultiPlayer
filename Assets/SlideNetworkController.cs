@@ -26,6 +26,7 @@ public class SlideNetworkController : NetworkBehaviour
         new NetworkVariable<LectureState>(LectureState.Stopped, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     private Coroutine serverAutoRoutine;
+    public MinigameFinishObjectToggler toggler;
 
     public override void OnNetworkSpawn()
     {
@@ -133,6 +134,7 @@ public class SlideNetworkController : NetworkBehaviour
     {
         if (!CanLocalControl()) return;
         RequestFinishServerRpc();
+        toggler.RequestFinishToggles();
     }
 
     public void HostNext()
