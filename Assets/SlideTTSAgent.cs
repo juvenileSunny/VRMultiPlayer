@@ -25,6 +25,7 @@ public class SlideTTSAgent : MonoBehaviour
 
     [Header("Advanced")]
     public bool interruptOnNewSpeak = true;
+    private bool _pauseRequested = false;
     public int requestTimeoutSeconds = 30;
 
     private Coroutine _speakRoutine;
@@ -112,14 +113,29 @@ public class SlideTTSAgent : MonoBehaviour
         }
     }
 
+    // public void PauseSpeaking()
+    // {
+    //     if (audioSource != null && audioSource.isPlaying)
+    //         audioSource.Pause();
+    // }
+
+    // public void ResumeSpeaking()
+    // {
+    //     if (audioSource != null && audioSource.clip != null && !audioSource.isPlaying)
+    //         audioSource.UnPause();
+    // }
     public void PauseSpeaking()
     {
+        _pauseRequested = true;
+
         if (audioSource != null && audioSource.isPlaying)
             audioSource.Pause();
     }
 
     public void ResumeSpeaking()
     {
+        _pauseRequested = false;
+
         if (audioSource != null && audioSource.clip != null && !audioSource.isPlaying)
             audioSource.UnPause();
     }
@@ -175,6 +191,11 @@ public class SlideTTSAgent : MonoBehaviour
 
             audioSource.clip = clip;
             audioSource.Play();
+            if (_pauseRequested)
+            {
+                // pause immediately if host pressed pause during download
+                audioSource.Pause();
+            }
 
             // Wait until playback finishes or gets stopped
             while (audioSource != null && audioSource.isPlaying)

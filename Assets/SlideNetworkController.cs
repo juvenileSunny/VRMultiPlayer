@@ -112,10 +112,31 @@ public class SlideNetworkController : NetworkBehaviour
     // These call server even if local player isn't "IsServer"
     // =========================================================
 
+    // public void HostStart()
+    // {
+    //     if (!CanLocalControl()) return;
+    //     RequestStartServerRpc();
+    // }
     public void HostStart()
     {
-        if (!CanLocalControl()) return;
-        RequestStartServerRpc();
+        if (!IsServer) return;
+
+        lectureState.Value = LectureState.Playing;
+
+        // Start speaking ONLY if not already speaking / no clip
+        ApplySlide(slideIndex.Value);
+
+        StartServerAutoIfNeeded();
+    }
+    public void HostRestartSlide()
+    {
+        if (!IsServer) return;
+
+        // Keep current state (Playing)
+        lectureState.Value = LectureState.Playing;
+
+        // Force re-speak current slide
+        ApplySlide(slideIndex.Value);
     }
 
     public void HostPause()
@@ -124,10 +145,21 @@ public class SlideNetworkController : NetworkBehaviour
         RequestPauseServerRpc();
     }
 
+    // public void HostResume()
+    // {
+    //     if (!CanLocalControl()) return;
+    //     RequestResumeServerRpc();
+    // }
     public void HostResume()
     {
-        if (!CanLocalControl()) return;
-        RequestResumeServerRpc();
+        if (!IsServer) return;
+
+        lectureState.Value = LectureState.Playing;
+
+        // DO NOT re-trigger ApplySlide() here
+        // That restarts the slide on host and desyncs clients.
+
+        StartServerAutoIfNeeded();
     }
 
     public void HostFinish()
