@@ -12,6 +12,10 @@ public class MindMapConnection : NetworkBehaviour
     private LineRenderer lineRenderer;
     private BoxCollider boxCollider;
     private MindMapManager mapManager;
+
+    // How far from each node center the collider starts — keeps it out of the node sphere
+    // so grabbing near a node always selects the node, not the connection line.
+    private const float COLLIDER_INSET = 0.30f;
     
     // Network variables to sync which nodes this connection connects
     private NetworkVariable<ulong> m_NodeA_NetworkId = new NetworkVariable<ulong>();
@@ -204,10 +208,16 @@ public class MindMapConnection : NetworkBehaviour
     void UpdateCollider()
     {
         if (boxCollider == null || pointA == null || pointB == null) return;
+        Vector3 dir = pointB.position - pointA.position;
+        float fullLength = dir.magnitude;
+        float insetLength = fullLength - COLLIDER_INSET * 2f;
+        // If nodes are too close together, disable the collider to avoid negative size.
+        if (insetLength <= 0f) { boxCollider.enabled = false; return; }
+        boxCollider.enabled = true;
+        // Midpoint stays the same; only the length shrinks inward from both ends.
         Vector3 midPoint = (pointA.position + pointB.position) / 2f;
         boxCollider.transform.position = midPoint;
-        Vector3 dir = pointB.position - pointA.position;
-        boxCollider.size = new Vector3(0.05f, 0.05f, dir.magnitude);
+        boxCollider.size = new Vector3(0.05f, 0.05f, insetLength);
         boxCollider.transform.rotation = Quaternion.LookRotation(dir.normalized);
     }
 

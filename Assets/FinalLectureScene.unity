@@ -21174,6 +21174,10 @@ PrefabInstance:
       propertyPath: loggingData
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4610087516668697060, guid: 2b89bb606d6436d4eadbeaeab6b105dd, type: 3}
+      propertyPath: serialNumber
+      value: tester
+      objectReference: {fileID: 0}
     - target: {fileID: 6166614685206740983, guid: 2b89bb606d6436d4eadbeaeab6b105dd, type: 3}
       propertyPath: m_Name
       value: DataEchoLogger
@@ -66818,13 +66822,7 @@ MonoBehaviour:
   mindMapEvent: {fileID: 11400000, guid: c5cffee239cec2943b10fe5f26ad8834, type: 2}
   connectionPrefab: {fileID: 6367602590594287258, guid: ffe2b306876a45a4196bff408c1b99a3, type: 3}
   mindMapData:
-    nodesList:
-    - id: 
-      text: 
-      color: {r: 0, g: 0, b: 0, a: 0}
-      position: {x: 0, y: 0, z: 0}
-      connections: []
-      lastInteractedBy: 
+    nodesList: []
   enableLogging: 0
 --- !u!4 &1114636577
 Transform:
