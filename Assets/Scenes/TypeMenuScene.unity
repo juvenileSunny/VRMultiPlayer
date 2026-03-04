@@ -737,7 +737,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   serialNumberInput: {fileID: 2072859804}
   submitButton: {fileID: 63519793}
-  nextSceneName: MindMap_XR_Tutorial
+  nextSceneName: FinalLectureScene
 --- !u!1 &840744646
 GameObject:
   m_ObjectHideFlags: 0
@@ -1515,6 +1515,14 @@ PrefabInstance:
     - target: {fileID: 4266640295717640281, guid: beb4e2871579447497fe41dfb108e2cd, type: 3}
       propertyPath: m_RootOrder
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4266640295717640281, guid: beb4e2871579447497fe41dfb108e2cd, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.8034
+      objectReference: {fileID: 0}
+    - target: {fileID: 4266640295717640281, guid: beb4e2871579447497fe41dfb108e2cd, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 3.7660165
       objectReference: {fileID: 0}
     - target: {fileID: 4266640295717640281, guid: beb4e2871579447497fe41dfb108e2cd, type: 3}
       propertyPath: m_LocalPosition.x
