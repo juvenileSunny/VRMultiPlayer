@@ -12,12 +12,12 @@ using Unity.Netcode;
 [System.Serializable]
 public class MindMapSnapshot
 {
-    public string timestamp;
+    public long unixTimestampMs; // UTC milliseconds since Unix epoch — timezone-agnostic
     public MindMapData mindMapData;
 
-    public MindMapSnapshot(string time, MindMapData data)
+    public MindMapSnapshot(long timestampMs, MindMapData data)
     {
-        timestamp = time;
+        unixTimestampMs = timestampMs;
         mindMapData = data;
     }
 }
@@ -247,6 +247,7 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
     private string saveDirectory = "MindMapSaves";
     private string currentSerialNumber = "";
     private string currentSaveFilePath = "";
+    private string sessionStartTimestamp = ""; // Captured once in Awake, used as stable filename suffix
 
     // Helper method to clean text by removing invisible Unicode characters
     public static string CleanText(string text)
@@ -294,6 +295,9 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
 
     void Awake()
     {
+        // Capture session start time once — used as unique filename suffix for this run.
+        sessionStartTimestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+
         // Initialize new system
         if (mindMapData == null)
             mindMapData = new MindMapData();
@@ -679,11 +683,11 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
                 return;
             }
 
-            // Update file path if serial number changed
+            // Update file path once per session when the serial number first becomes available.
             if (serialNumber != currentSerialNumber)
             {
                 currentSerialNumber = serialNumber;
-                string filename = $"MindMap_{currentSerialNumber}.json";
+                string filename = $"MindMap_{currentSerialNumber}_{sessionStartTimestamp}.json";
                 currentSaveFilePath = Path.Combine(Application.persistentDataPath, saveDirectory, filename);
             }
 
@@ -703,9 +707,9 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
                 saveFile = new MindMapSaveFile(currentSerialNumber);
             }
 
-            // Create new snapshot with timestamp
-            string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-            MindMapSnapshot snapshot = new MindMapSnapshot(timestamp, mindMapData);
+            // Create new snapshot with UTC Unix timestamp in milliseconds.
+            long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            MindMapSnapshot snapshot = new MindMapSnapshot(nowMs, mindMapData);
             saveFile.snapshots.Add(snapshot);
 
             // Save to file
