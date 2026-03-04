@@ -316,7 +316,7 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
         // Auto-save functionality
         if (Time.time - lastSaveTime >= autoSaveInterval)
         {
-            if (enableLogging)
+            if (enableLogging && mindMapData.GetAllNodes().Count > 0)
                 SaveMindMapData();
             lastSaveTime = Time.time;
         }
