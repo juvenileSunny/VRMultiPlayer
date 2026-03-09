@@ -4,8 +4,10 @@ using PanettoneGames.GenEvents;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Unity.Netcode;
+using Unity.Collections;
 
-public class MindMapNode : MonoBehaviour
+public class MindMapNode : NetworkBehaviour
 {
     [Header("Connection System")]
     public LayerMask targetLayer;
@@ -35,6 +37,62 @@ public class MindMapNode : MonoBehaviour
     // Position tracking for automatic updates
     private Vector3 lastPosition;
     private bool trackPosition = true;
+
+    // Prevents trigger collider from firing immediately at spawn (e.g. when two nodes appear at the same position)
+    private bool connectionReady = false;
+
+    // Per-collider cooldown so OnTriggerStay doesn't spam RPCs (one attempt per second per pair is enough)
+    private Dictionary<Collider, float> connectionAttemptTime = new Dictionary<Collider, float>();
+    private const float CONNECTION_RPC_COOLDOWN = 1f;
+
+    // Reference to the grab interactable so we can poll isSelected in Update
+    private UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable grabInteractable;
+
+    // Static lookup: root NetworkObjectId → MindMapNode
+    // Used by MindMapConnection to resolve node transforms without GetComponentInChildren,
+    // which fails when XR grab reparents the node under the XR controller attachment point.
+    public static readonly Dictionary<ulong, MindMapNode> Registry = new Dictionary<ulong, MindMapNode>();
+
+    // Cached serial so transient DataEcho failures don't silently fall back to the NetworkClientId number.
+    private static string s_cachedSerial = null;
+
+    // True while ApplyTextChange is writing to the input field so the onValueChanged callback
+    // doesn't fire a reflect-back RPC from the wrong client.
+    private bool m_syncingText = false;
+
+    // Gets this client's serial number from DataEcho, caches on first success.
+    // Falls back to LocalClientId string only if DataEcho is genuinely unavailable.
+    private string GetLocalSerialNumber()
+    {
+        if (!string.IsNullOrEmpty(s_cachedSerial)) return s_cachedSerial;
+        try
+        {
+            string s = DataEcho.SessionCollector.Instance.GetSerialNumber();
+            if (!string.IsNullOrEmpty(s))
+            {
+                s_cachedSerial = s;
+                return s;
+            }
+        }
+        catch { }
+        return NetworkManager.Singleton != null ? NetworkManager.Singleton.LocalClientId.ToString() : "unknown";
+    }
+
+    // NetworkVariables persist current state for late joiners — unlike ClientRpcs which are fire-and-forget.
+    // Any client that joins after text/color was set will automatically receive the current value.
+    private NetworkVariable<FixedString512Bytes> m_NodeText = new NetworkVariable<FixedString512Bytes>(
+        new FixedString512Bytes(""),
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server);
+    private NetworkVariable<Color> m_NodeColor = new NetworkVariable<Color>(
+        Color.white,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server);
+    // Syncs whether the text label is visible on the node for all users
+    private NetworkVariable<bool> m_TextVisible = new NetworkVariable<bool>(
+        false,
+        NetworkVariableReadPermission.Everyone,
+        NetworkVariableWritePermission.Server);
 
     void Start()
     {
@@ -77,6 +135,9 @@ public class MindMapNode : MonoBehaviour
         // Initialize node in data structure
         InitializeNodeInDataStructure();
 
+        // Allow a short grace period before the trigger is active so spawn-position overlaps don't create false connections
+        StartCoroutine(EnableConnectionAfterDelay(0.5f));
+
         // Store original color and material
         if (nodeRenderer != null)
         {
@@ -98,7 +159,60 @@ public class MindMapNode : MonoBehaviour
 
         // setup activate node selection on grab from parent's grab interactable
         var interactable = GetComponentInParent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
+        grabInteractable = interactable;
         interactable?.activated.AddListener((interactor) => ToggleNodeSelection());
+
+        // When this client grabs the node, request ownership so ClientNetworkTransform lets us move it
+        interactable?.selectEntered.AddListener((args) => OnGrabbed());
+
+        // Apply synced NetworkVariable state now that all references are initialized.
+        // OnNetworkSpawn fires before Start(), so any Apply calls there would hit null references.
+        // Re-applying here is the reliable late-joiner path.
+        if (IsSpawned)
+        {
+            string currentText = m_NodeText.Value.ToString();
+            if (!string.IsNullOrEmpty(currentText))
+                ApplyTextChange(currentText);
+            ApplyColorChange(m_NodeColor.Value);
+            ApplyTextVisibility(m_TextVisible.Value);
+        }
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        NetworkObject root = GetComponentInParent<NetworkObject>();
+        if (root != null)
+            Registry[root.NetworkObjectId] = this;
+
+        // Subscribe to NetworkVariable changes so all clients (including late joiners) stay in sync
+        m_NodeText.OnValueChanged += OnNodeTextChanged;
+        m_NodeColor.OnValueChanged += OnNodeColorChanged;
+        m_TextVisible.OnValueChanged += OnTextVisibleChanged;
+
+        // Apply current values immediately — this is what late joiners receive on join
+        string currentText = m_NodeText.Value.ToString();
+        if (!string.IsNullOrEmpty(currentText))
+            ApplyTextChange(currentText);
+        ApplyColorChange(m_NodeColor.Value);
+        ApplyTextVisibility(m_TextVisible.Value);
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        base.OnNetworkDespawn();
+        NetworkObject root = GetComponentInParent<NetworkObject>();
+        if (root != null)
+            Registry.Remove(root.NetworkObjectId);
+
+        m_NodeText.OnValueChanged -= OnNodeTextChanged;
+        m_NodeColor.OnValueChanged -= OnNodeColorChanged;
+        m_TextVisible.OnValueChanged -= OnTextVisibleChanged;
+
+        // Remove node from local data on all clients when despawned.
+        // Server-side data is already cleaned up by DeleteNodeServerRpc → RemoveAllConnectionsToNode.
+        if (!IsServer)
+            mapManager?.RemoveNodeData(gameObject);
     }
 
     void Update()
@@ -109,32 +223,92 @@ public class MindMapNode : MonoBehaviour
             OnPositionChanged();
             lastPosition = transform.position;
         }
+
     }
-    
+
+    private IEnumerator EnableConnectionAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        connectionReady = true;
+    }
+
+    // Request ownership when this client grabs the node, and always record who grabbed it.
+    private void OnGrabbed()
+    {
+        if (!IsSpawned) return;
+        if (!IsOwner)
+            RequestOwnershipServerRpc(NetworkManager.Singleton.LocalClientId);
+        // Always stamp lastInteractedBy regardless of current ownership state.
+        NotifyGrabServerRpc(GetLocalSerialNumber());
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void NotifyGrabServerRpc(string serialNumber)
+    {
+        mapManager?.UpdateLastInteractedBy(gameObject, serialNumber);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void RequestOwnershipServerRpc(ulong requestingClientId)
+    {
+        NetworkObject rootNetObj = GetComponentInParent<NetworkObject>();
+        if (rootNetObj != null)
+        {
+            rootNetObj.ChangeOwnership(requestingClientId);
+            Debug.Log($"Ownership of {gameObject.name} transferred to client {requestingClientId}");
+        }
+    }
+
     // Handle real-time text input changes
     private void OnTextInputChanged(string newText)
     {
-        // Update the data structure in real-time as user types
+        // Update locally first
+        if (nodeText != null && nodeText.text != newText)
+        {
+            nodeText.text = newText;
+        }
+        
+        // Update the data structure
         if (mapManager != null)
         {
             mapManager.UpdateNodeText(gameObject, newText);
         }
         
-        // Also update the display text if it's different
+        // Sync to network if networked — skip if this change came from a NetworkVariable sync
+        // to avoid reflect-back RPCs from other clients overwriting lastInteractedBy.
+        if (IsSpawned && !m_syncingText)
+            UpdateTextServerRpc(newText, GetLocalSerialNumber());
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void UpdateTextServerRpc(string newText, string serialNumber)
+    {
+        m_NodeText.Value = new FixedString512Bytes(newText);
+        mapManager?.UpdateLastInteractedBy(gameObject, serialNumber);
+    }
+
+    private void OnNodeTextChanged(FixedString512Bytes oldValue, FixedString512Bytes newValue)
+    {
+        ApplyTextChange(newValue.ToString());
+    }
+
+    private void ApplyTextChange(string newText)
+    {
+        m_syncingText = true;
         if (nodeText != null && nodeText.text != newText)
-        {
             nodeText.text = newText;
-        }
+        if (inputFieldComponent != null && inputFieldComponent.text != newText)
+            inputFieldComponent.text = newText;
+        m_syncingText = false;
+        if (mapManager != null)
+            mapManager.UpdateNodeText(gameObject, newText);
     }
     
     // Handle position changes
     private void OnPositionChanged()
     {
         if (mapManager != null)
-        {
             mapManager.UpdateNodePosition(gameObject, transform.position);
-            Debug.Log($"Position updated for {gameObject.name}: {transform.position}");
-        }
     }
 
     // Initialize this node in the data structure
@@ -147,21 +321,87 @@ public class MindMapNode : MonoBehaviour
             string currentText = GetNodeText();
             Color currentColor = GetNodeColor();
             
-            // The manager will handle adding this node when connections are made
-            // But we can also update existing data if node already exists
+            // Update methods will automatically add the node if it doesn't exist
             mapManager.UpdateNodeText(gameObject, currentText);
             mapManager.UpdateNodeColor(gameObject, currentColor);
+            mapManager.UpdateNodePosition(gameObject, transform.position);
+            
+            Debug.Log($"Initialized node {gameObject.name} in data structure");
         }
     }
 
     // Sends an event to the mind map manager that a connection has been created when it touches another MindNode.
-    void OnTriggerEnter(Collider other)
+    void OnTriggerEnter(Collider other) => TryCreateConnection(other);
+
+    // Also check OnTriggerStay: XRGrabInteractable uses kinematic movement during grab,
+    // which can prevent OnTriggerEnter from firing while the node is being held.
+    // Connection creation is idempotent (AreConnected check prevents duplicates).
+    void OnTriggerStay(Collider other) => TryCreateConnection(other);
+
+    // Clean up cooldown entries when colliders separate to avoid stale dictionary growth
+    void OnTriggerExit(Collider other) => connectionAttemptTime.Remove(other);
+
+    private void TryCreateConnection(Collider other)
     {
-        if ((targetLayer.value & (1 << other.gameObject.layer)) != 0)
+        // Ignore triggers during the spawn grace period
+        if (!connectionReady) return;
+
+        if ((targetLayer.value & (1 << other.gameObject.layer)) == 0) return;
+
+        // Rate-limit per collider so OnTriggerStay doesn't spam RPCs
+        float now = Time.time;
+        if (connectionAttemptTime.TryGetValue(other, out float lastAttempt) && now - lastAttempt < CONNECTION_RPC_COOLDOWN)
+            return;
+        connectionAttemptTime[other] = now;
+
+        bool isNetworked = Unity.Netcode.NetworkManager.Singleton != null && Unity.Netcode.NetworkManager.Singleton.IsListening;
+        if (isNetworked)
         {
-            mindMapEvent.Raise(this.gameObject, other.gameObject);
-            Debug.Log("MindMapNode triggered/collision detected for connection");
+            // Must be spawned to send RPCs
+            if (!IsSpawned) return;
+
+            // Route through server so both host and clients can create connections
+            NetworkObject myNetObj = GetComponentInParent<Unity.Netcode.NetworkObject>();
+            NetworkObject otherNetObj = other.GetComponentInParent<Unity.Netcode.NetworkObject>();
+            if (myNetObj != null && otherNetObj != null)
+                RequestConnectionServerRpc(myNetObj.NetworkObjectId, otherNetObj.NetworkObjectId, GetLocalSerialNumber());
+            else
+                Debug.LogWarning($"[MindMapNode] TryCreateConnection: Could not find NetworkObject on one or both nodes (myNetObj={myNetObj}, otherNetObj={otherNetObj})");
         }
+        else
+        {
+            // Non-networked scene (tutorial) - use existing event directly
+            mindMapEvent.Raise(this.gameObject, other.gameObject);
+        }
+    }
+    
+    [Unity.Netcode.ServerRpc(RequireOwnership = false)]
+    private void RequestConnectionServerRpc(ulong nodeAId, ulong nodeBId, string serialNumber)
+    {
+        var spawnedObjects = Unity.Netcode.NetworkManager.Singleton.SpawnManager.SpawnedObjects;
+
+        if (!spawnedObjects.TryGetValue(nodeAId, out Unity.Netcode.NetworkObject nodeA))
+        { Debug.LogWarning($"[MindMapNode] Could not find spawned object with ID {nodeAId}"); return; }
+        if (!spawnedObjects.TryGetValue(nodeBId, out Unity.Netcode.NetworkObject nodeB))
+        { Debug.LogWarning($"[MindMapNode] Could not find spawned object with ID {nodeBId}"); return; }
+
+        MindMapNode mindNodeA = nodeA.GetComponentInChildren<MindMapNode>();
+        MindMapNode mindNodeB = nodeB.GetComponentInChildren<MindMapNode>();
+        if (mindNodeA == null) { Debug.LogWarning($"[MindMapNode] No MindMapNode found in children of {nodeA.name}"); return; }
+        if (mindNodeB == null) { Debug.LogWarning($"[MindMapNode] No MindMapNode found in children of {nodeB.name}"); return; }
+
+        MindMapManager manager = mapManager != null ? mapManager : FindObjectOfType<MindMapManager>();
+        if (manager == null) { Debug.LogWarning($"[MindMapNode] mapManager is null"); return; }
+        mapManager = manager;
+
+        // Discard duplicate RPCs — physics runs on all clients so every machine sends this
+        // when a collision is detected. Only the first RPC should create the connection.
+        if (manager.AreNodesConnected(mindNodeA.gameObject, mindNodeB.gameObject)) return;
+
+        manager.OnEventRaised(mindNodeA.gameObject, mindNodeB.gameObject);
+        // Note: lastInteractedBy is NOT updated here. The node that was grabbed already has
+        // the correct serial set by NotifyGrabServerRpc before the collision happened.
+        // Stamping it here would overwrite with whoever's physics RPC arrived first (often the host).
     }
 
 
@@ -230,47 +470,90 @@ public class MindMapNode : MonoBehaviour
     // Delete button functionality
     private void OnDeleteButtonClicked()
     {
-        Debug.Log($"Delete button clicked for node {gameObject.name}");
-
-        // Hide interaction panel
         if (interactionPanel != null)
-        {
             interactionPanel.SetActive(false);
-        }
 
-        // Remove all connections to this node via MindMapManager
-        if (mapManager != null)
+        bool isNetworked = NetworkManager.Singleton != null && NetworkManager.Singleton.IsListening;
+        if (isNetworked && IsSpawned)
         {
-            mapManager.RemoveAllConnectionsToNode(gameObject);
+            NetworkObject rootNetObj = GetComponentInParent<NetworkObject>();
+            if (rootNetObj != null)
+                DeleteNodeServerRpc(rootNetObj.NetworkObjectId, GetLocalSerialNumber());
+        }
+        else
+        {
+            // Non-networked (tutorial) — clean up locally
+            if (mapManager != null)
+                mapManager.RemoveAllConnectionsToNode(gameObject);
+            NetworkObject rootNetObj = GetComponentInParent<NetworkObject>();
+            Destroy(rootNetObj != null ? rootNetObj.gameObject : gameObject);
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void DeleteNodeServerRpc(ulong nodeNetworkId, string serialNumber)
+    {
+        var spawnedObjects = NetworkManager.Singleton.SpawnManager.SpawnedObjects;
+        if (!spawnedObjects.TryGetValue(nodeNetworkId, out NetworkObject rootNetObj)) return;
+
+        MindMapNode mindNode = rootNetObj.GetComponentInChildren<MindMapNode>(true);
+        GameObject nodeGO = mindNode != null ? mindNode.gameObject : rootNetObj.gameObject;
+
+        MindMapManager manager = mapManager != null ? mapManager : FindObjectOfType<MindMapManager>();
+        if (manager != null)
+        {
+            manager.UpdateLastInteractedBy(nodeGO, serialNumber);
+            manager.RemoveAllConnectionsToNode(nodeGO);
         }
 
-        // Destroy the node
-        Destroy(gameObject);
+        rootNetObj.Despawn(true);
     }
 
     // Text button functionality - toggles text input field
     private void OnAddTextButtonClicked()
     {
-        Debug.Log($"Text button clicked for node {gameObject.name}");
-
         if (textInputField != null)
         {
             textInputActive = !textInputActive;
+
+            // The input field is local-only (only the editing user needs it)
             textInputField.SetActive(textInputActive);
-            
-            // When showing input field, populate it with current text
             if (textInputActive && inputFieldComponent != null)
             {
+                // Use m_syncingText so loading the current text into the field doesn't
+                // fire an unnecessary UpdateTextServerRpc before the user types anything.
+                m_syncingText = true;
                 inputFieldComponent.text = GetNodeText();
-                inputFieldComponent.ActivateInputField(); // Focus the input field
+                m_syncingText = false;
+                inputFieldComponent.ActivateInputField();
             }
 
-            Debug.Log($"Text input field {(textInputActive ? "shown" : "hidden")}");
+            // Sync visibility to all clients via NetworkVariable
+            if (IsSpawned)
+                SetTextVisibleServerRpc(textInputActive, GetLocalSerialNumber());
         }
         else
         {
             Debug.LogWarning("No textInputField assigned to this node!");
         }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void SetTextVisibleServerRpc(bool visible, string serialNumber)
+    {
+        m_TextVisible.Value = visible;
+        mapManager?.UpdateLastInteractedBy(gameObject, serialNumber);
+    }
+
+    private void OnTextVisibleChanged(bool oldValue, bool newValue)
+    {
+        ApplyTextVisibility(newValue);
+    }
+
+    private void ApplyTextVisibility(bool visible)
+    {
+        if (textInputField != null)
+            textInputField.SetActive(visible);
     }
 
     // Change color button functionality
@@ -283,24 +566,49 @@ public class MindMapNode : MonoBehaviour
             currentColorIndex = (currentColorIndex + 1) % availableColors.Length;
             Color newColor = availableColors[currentColorIndex];
             
-            // Update the visual representation
-            nodeRenderer.material.color = newColor;
-
-            // Update the data structure via MindMapManager
-            if (mapManager != null)
-            {
-                mapManager.UpdateNodeColor(gameObject, newColor);
-            }
-
-            // Update the stored original color to the new color
-            UpdateOriginalColor();
-
-            // Re-apply highlight if currently selected
-            if (isSelected)
-            {
-                ShowHighlight();
-            }
+            // Update locally
+            ApplyColorChange(newColor);
+            
+            // Sync to network if networked
+            if (IsSpawned)
+                UpdateColorServerRpc(newColor, GetLocalSerialNumber());
         }
+    }
+
+    private void ApplyColorChange(Color newColor)
+    {
+        // Update the visual representation
+        if (nodeRenderer != null)
+        {
+            nodeRenderer.material.color = newColor;
+        }
+
+        // Update the data structure via MindMapManager
+        if (mapManager != null)
+        {
+            mapManager.UpdateNodeColor(gameObject, newColor);
+        }
+
+        // Update the stored original color to the new color
+        UpdateOriginalColor();
+
+        // Re-apply highlight if currently selected
+        if (isSelected)
+        {
+            ShowHighlight();
+        }
+    }
+    
+    [ServerRpc(RequireOwnership = false)]
+    private void UpdateColorServerRpc(Color newColor, string serialNumber)
+    {
+        m_NodeColor.Value = newColor;
+        mapManager?.UpdateLastInteractedBy(gameObject, serialNumber);
+    }
+
+    private void OnNodeColorChanged(Color oldValue, Color newValue)
+    {
+        ApplyColorChange(newValue);
     }
 
     // Helper method to restore original color

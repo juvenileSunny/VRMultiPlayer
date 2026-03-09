@@ -1,12 +1,40 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using PanettoneGames.GenEvents;
 using SplineMesh;
 using UnityEngine;
+using Unity.Netcode;
 
 // Data classes for mind map structure
+[System.Serializable]
+public class MindMapSnapshot
+{
+    public long unixTimestampMs; // UTC milliseconds since Unix epoch — timezone-agnostic
+    public MindMapData mindMapData;
+
+    public MindMapSnapshot(long timestampMs, MindMapData data)
+    {
+        unixTimestampMs = timestampMs;
+        mindMapData = data;
+    }
+}
+
+[System.Serializable]
+public class MindMapSaveFile
+{
+    public string serialNumber;
+    public List<MindMapSnapshot> snapshots = new List<MindMapSnapshot>();
+
+    public MindMapSaveFile(string serial)
+    {
+        serialNumber = serial;
+        snapshots = new List<MindMapSnapshot>();
+    }
+}
+
 [System.Serializable]
 public class MindMapNodeData
 {
@@ -15,6 +43,7 @@ public class MindMapNodeData
     public Color color;
     public Vector3 position;
     public List<string> connections; // Changed from HashSet to List for Unity serialization
+    public string lastInteractedBy; // Serial number of the user who last interacted with this node
 
     public MindMapNodeData(string nodeId, string nodeText = "", Color? nodeColor = null, Vector3? pos = null)
     {
@@ -23,6 +52,7 @@ public class MindMapNodeData
         color = nodeColor ?? Color.white;
         position = pos ?? Vector3.zero;
         connections = new List<string>();
+        lastInteractedBy = "";
     }
 
     // Helper method to check if connection exists (since we're using List instead of HashSet)
@@ -88,7 +118,19 @@ public class MindMapData
         // Clean the text to remove invisible characters (call static method from MindMapManager)
         string cleanedText = MindMapManager.CleanText(text);
         
-        string id = System.Guid.NewGuid().ToString();
+        // Use NetworkObjectId if available for consistent IDs across clients, otherwise use GUID.
+        // Use GetComponentInParent because NetworkObject lives on the root Node_W,
+        // not on the MindMapNode child gameObject passed in here.
+        string id;
+        NetworkObject networkObject = gameObject.GetComponentInParent<NetworkObject>();
+        if (networkObject != null && networkObject.IsSpawned)
+        {
+            id = networkObject.NetworkObjectId.ToString();
+        }
+        else
+        {
+            id = System.Guid.NewGuid().ToString();
+        }
         var nodeData = new MindMapNodeData(id, cleanedText, color, gameObject.transform.position);
 
         nodes[id] = nodeData;
@@ -174,6 +216,12 @@ public class MindMapData
             nodes[nodeId].position = newPosition;
     }
 
+    public void UpdateLastInteractedBy(string nodeId, string serialNumber)
+    {
+        if (nodes.ContainsKey(nodeId))
+            nodes[nodeId].lastInteractedBy = serialNumber;
+    }
+
     public Dictionary<string, MindMapNodeData> GetAllNodes() => new Dictionary<string, MindMapNodeData>(nodes);
 }
 
@@ -190,6 +238,16 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
 
     // Visual connections using string-based keys
     private Dictionary<(string, string), GameObject> visualConnections;
+
+    // Auto-save settings
+    [Tooltip("Enable to save mind map data to disk. Enable only on the server build, disable on client builds.")]
+    public bool enableLogging = false;
+    private float autoSaveInterval = 0.1f; // Save every 0.1 seconds
+    private float lastSaveTime = 0f;
+    private string saveDirectory = "MindMapSaves";
+    private string currentSerialNumber = "";
+    private string currentSaveFilePath = "";
+    private string sessionStartTimestamp = ""; // Captured once in Awake, used as stable filename suffix
 
     // Helper method to clean text by removing invisible Unicode characters
     public static string CleanText(string text)
@@ -237,17 +295,36 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
 
     void Awake()
     {
+        // Capture session start time once — used as unique filename suffix for this run.
+        sessionStartTimestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+
         // Initialize new system
         if (mindMapData == null)
             mindMapData = new MindMapData();
 
         mindMapData.RebuildDictionaries(); // Ensure dictionaries are built from serialized data
         visualConnections = new Dictionary<(string, string), GameObject>();
+
+        // Create save directory if it doesn't exist
+        string fullSavePath = Path.Combine(Application.persistentDataPath, saveDirectory);
+        if (!Directory.Exists(fullSavePath))
+        {
+            Directory.CreateDirectory(fullSavePath);
+            Debug.Log($"Created save directory at: {fullSavePath}");
+        }
     }
 
     // late update, 
     void LateUpdate()
     {
+        // Auto-save functionality
+        if (Time.time - lastSaveTime >= autoSaveInterval)
+        {
+            if (enableLogging && mindMapData.GetAllNodes().Count > 0)
+                SaveMindMapData();
+            lastSaveTime = Time.time;
+        }
+
         // if in tutorial scene, and current tutorial event is for MindNodeCompleted complete, raise tutorial event 
         if (tutorialEvents != null && TutorialManager.currentEvent == TutorialManager.TutorialEventIDs.MindNodeCompleted)
         {
@@ -339,26 +416,20 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
     // This gets called when 2 mind nodes are touched together, it creates a line connection between the 2 nodes, it goes both ways
     public void OnEventRaised(GameObject item1, GameObject item2)
     {
-        Debug.Log($"Connection event between {item1.name} and {item2.name}");
-
-        // Handle with data structure
         string nodeId1 = mindMapData.GetNodeId(item1);
         string nodeId2 = mindMapData.GetNodeId(item2);
 
-        // Add nodes if they don't exist
         if (string.IsNullOrEmpty(nodeId1))
             nodeId1 = mindMapData.AddNode(item1);
         if (string.IsNullOrEmpty(nodeId2))
             nodeId2 = mindMapData.AddNode(item2);
 
-        // Check if already connected
         if (mindMapData.AreConnected(nodeId1, nodeId2))
         {
             Debug.Log("Connection already exists, skipping creation");
             return;
         }
 
-        // Add logical connection
         if (mindMapData.AddConnection(nodeId1, nodeId2))
         {
             CreateVisualConnection(nodeId1, nodeId2, item1.transform, item2.transform);
@@ -366,46 +437,90 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
         }
     }
 
+    // Returns true if these two node GameObjects are already connected in the data.
+    // Used by RequestConnectionServerRpc to discard duplicate RPCs from other clients.
+    public bool AreNodesConnected(GameObject item1, GameObject item2)
+    {
+        string id1 = mindMapData.GetNodeId(item1);
+        string id2 = mindMapData.GetNodeId(item2);
+        if (string.IsNullOrEmpty(id1) || string.IsNullOrEmpty(id2)) return false;
+        return mindMapData.AreConnected(id1, id2);
+    }
+    
+    // Helper method to create visual connection with proper setup
+    private GameObject InstantiateConnection()
+    {
+        GameObject newLine = Instantiate<GameObject>(connectionPrefab);
+        
+        // Only server can spawn network objects
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+        {
+            NetworkObject networkObject = newLine.GetComponent<NetworkObject>();
+            if (networkObject != null)
+            {
+                networkObject.Spawn();
+                Debug.Log("Connection spawned on network");
+            }
+        }
+        
+        return newLine;
+    }
+
     private void CreateVisualConnection(string nodeId1, string nodeId2, Transform transform1, Transform transform2)
     {
         var connectionKey = GetConnectionKey(nodeId1, nodeId2);
 
-        GameObject newLine = Instantiate<GameObject>(connectionPrefab);
+        GameObject newLine = InstantiateConnection();
         MindMapConnection line = newLine.GetComponent<MindMapConnection>();
-        line.pointA = transform1;
-        line.pointB = transform2;
+        
+        if (line != null)
+        {
+            line.SetNodes(transform1, transform2);
+        }
+        else
+        {
+            // MindMapConnection script missing from connection prefab!
+            Debug.LogError("[MindMapManager] Connection prefab is missing the MindMapConnection component! Check the Inspector.");
+        }
 
         visualConnections[connectionKey] = newLine;
     }
 
     // NEW API METHODS for external scripts to use
+    
+    // Helper method to ensure a node exists in the data structure
+    private string EnsureNodeExists(GameObject nodeGameObject)
+    {
+        string nodeId = mindMapData.GetNodeId(nodeGameObject);
+        if (string.IsNullOrEmpty(nodeId))
+        {
+            // Node doesn't exist, add it
+            nodeId = mindMapData.AddNode(nodeGameObject);
+            Debug.Log($"Auto-added node {nodeGameObject.name} (ID: {nodeId}) to data structure");
+        }
+        return nodeId;
+    }
+    
     public void UpdateNodeText(GameObject nodeGameObject, string newText)
     {
-        // Clean the text to remove invisible characters
         string cleanedText = CleanText(newText);
-        
-        string nodeId = mindMapData.GetNodeId(nodeGameObject);
+        string nodeId = EnsureNodeExists(nodeGameObject);
         if (!string.IsNullOrEmpty(nodeId))
-        {
-            Debug.Log($"UpdateNodeText: Updating node {nodeGameObject.name} (ID: {nodeId}) text from '{mindMapData.GetNode(nodeId)?.text}' to '{cleanedText}' (original: '{newText}')");
             mindMapData.UpdateNodeText(nodeId, cleanedText);
-        }
         else
-        {
-            Debug.LogWarning($"UpdateNodeText: Could not find node ID for GameObject {nodeGameObject.name}");
-        }
+            Debug.LogWarning($"UpdateNodeText: Could not find or create node ID for GameObject {nodeGameObject.name}");
     }
 
     public void UpdateNodeColor(GameObject nodeGameObject, Color newColor)
     {
-        string nodeId = mindMapData.GetNodeId(nodeGameObject);
+        string nodeId = EnsureNodeExists(nodeGameObject);
         if (!string.IsNullOrEmpty(nodeId))
             mindMapData.UpdateNodeColor(nodeId, newColor);
     }
 
     public void UpdateNodePosition(GameObject nodeGameObject, Vector3 newPosition)
     {
-        string nodeId = mindMapData.GetNodeId(nodeGameObject);
+        string nodeId = EnsureNodeExists(nodeGameObject);
         if (!string.IsNullOrEmpty(nodeId))
             mindMapData.UpdateNodePosition(nodeId, newPosition);
     }
@@ -463,7 +578,7 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
                 var connectionKey = GetConnectionKey(nodeId1, nodeId2);
                 if (visualConnections.ContainsKey(connectionKey))
                 {
-                    Destroy(visualConnections[connectionKey]);
+                    DespawnOrDestroy(visualConnections[connectionKey]);
                     visualConnections.Remove(connectionKey);
                 }
             }
@@ -484,7 +599,7 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
                 var connectionKey = GetConnectionKey(nodeId, connectedId);
                 if (visualConnections.ContainsKey(connectionKey))
                 {
-                    Destroy(visualConnections[connectionKey]);
+                    DespawnOrDestroy(visualConnections[connectionKey]);
                     visualConnections.Remove(connectionKey);
                 }
             }
@@ -492,10 +607,138 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
         }
     }
 
+    // Despawn a networked GameObject on the server, or Destroy it locally if not networked
+    private void DespawnOrDestroy(GameObject go)
+    {
+        if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsServer)
+        {
+            NetworkObject netObj = go.GetComponent<NetworkObject>();
+            if (netObj != null && netObj.IsSpawned)
+            {
+                netObj.Despawn(true);
+                return;
+            }
+        }
+        Destroy(go);
+    }
+
+    // Data-only node removal — removes from local MindMapData without despawning the GameObject.
+    // Used on clients since the server already handles full cleanup via RemoveAllConnectionsToNode.
+    public void RemoveNodeData(GameObject nodeGameObject)
+    {
+        string nodeId = mindMapData.GetNodeId(nodeGameObject);
+        if (!string.IsNullOrEmpty(nodeId))
+            mindMapData.RemoveNode(nodeId);
+    }
+
+    // Data-only connection registration — adds nodes and connection to local MindMapData without
+    // spawning any visual. Used on clients to keep their data in sync with the server.
+    public void RegisterConnectionData(GameObject item1, GameObject item2)
+    {
+        if (item1 == null || item2 == null) return;
+        string nodeId1 = mindMapData.GetNodeId(item1);
+        string nodeId2 = mindMapData.GetNodeId(item2);
+        if (string.IsNullOrEmpty(nodeId1)) nodeId1 = mindMapData.AddNode(item1);
+        if (string.IsNullOrEmpty(nodeId2)) nodeId2 = mindMapData.AddNode(item2);
+        mindMapData.AddConnection(nodeId1, nodeId2); // no-op if already connected
+    }
+
+    // Data-only connection removal — removes from local MindMapData without despawning the visual.
+    public void RemoveConnectionData(GameObject item1, GameObject item2)
+    {
+        if (item1 == null || item2 == null) return;
+        string nodeId1 = mindMapData.GetNodeId(item1);
+        string nodeId2 = mindMapData.GetNodeId(item2);
+        if (!string.IsNullOrEmpty(nodeId1) && !string.IsNullOrEmpty(nodeId2))
+            mindMapData.RemoveConnection(nodeId1, nodeId2);
+    }
+
     // Helper method to create consistent connection keys
     private (string, string) GetConnectionKey(string a, string b)
     {
         return string.Compare(a, b) < 0 ? (a, b) : (b, a);
+    }
+
+    // Public overload used by ServerRpcs to record the correct client's serial number.
+    // Bypasses the local DataEcho lookup so the server logs who actually interacted.
+    public void UpdateLastInteractedBy(GameObject nodeGameObject, string serialNumber)
+    {
+        if (string.IsNullOrEmpty(serialNumber)) return;
+        string nodeId = mindMapData.GetNodeId(nodeGameObject);
+        if (string.IsNullOrEmpty(nodeId)) nodeId = EnsureNodeExists(nodeGameObject);
+        if (!string.IsNullOrEmpty(nodeId))
+            mindMapData.UpdateLastInteractedBy(nodeId, serialNumber);
+    }
+
+    // Save mind map data to file with timestamp
+    private void SaveMindMapData()
+    {
+        try
+        {
+            // Get current serial number
+            string serialNumber = GetCurrentSerialNumber();
+            if (string.IsNullOrEmpty(serialNumber))
+            {
+                // No serial number yet, skip saving
+                return;
+            }
+
+            // Update file path once per session when the serial number first becomes available.
+            if (serialNumber != currentSerialNumber)
+            {
+                currentSerialNumber = serialNumber;
+                string filename = $"MindMap_{currentSerialNumber}_{sessionStartTimestamp}.json";
+                currentSaveFilePath = Path.Combine(Application.persistentDataPath, saveDirectory, filename);
+            }
+
+            // Load existing save file or create new one
+            MindMapSaveFile saveFile;
+            if (File.Exists(currentSaveFilePath))
+            {
+                string existingJson = File.ReadAllText(currentSaveFilePath);
+                saveFile = JsonUtility.FromJson<MindMapSaveFile>(existingJson);
+                if (saveFile == null || saveFile.snapshots == null)
+                {
+                    saveFile = new MindMapSaveFile(currentSerialNumber);
+                }
+            }
+            else
+            {
+                saveFile = new MindMapSaveFile(currentSerialNumber);
+            }
+
+            // Create new snapshot with UTC Unix timestamp in milliseconds.
+            long nowMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            MindMapSnapshot snapshot = new MindMapSnapshot(nowMs, mindMapData);
+            saveFile.snapshots.Add(snapshot);
+
+            // Save to file
+            string jsonData = JsonUtility.ToJson(saveFile, true);
+            File.WriteAllText(currentSaveFilePath, jsonData);
+            
+            // Optional: Log only occasionally to avoid spam
+            if (Time.frameCount % 300 == 0) // Log every ~5 seconds at 60 FPS
+            {
+                Debug.Log($"Mind map auto-saved to: {currentSaveFilePath} (Total snapshots: {saveFile.snapshots.Count})");
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Failed to save mind map data: {e.Message}");
+        }
+    }
+
+    // Helper method to get current serial number
+    private string GetCurrentSerialNumber()
+    {
+        try
+        {
+            return DataEcho.SessionCollector.Instance.GetSerialNumber();
+        }
+        catch (System.Exception)
+        {
+            return "";
+        }
     }
 
     // DEBUG METHODS - for testing and verification
@@ -558,6 +801,30 @@ public class MindMapManager : MonoBehaviour, IDualGameEventListener<GameObject, 
     {
         var allNodes = mindMapData.GetAllNodes();
         Debug.Log($"Mind Map contains {allNodes.Count} nodes");
+    }
+
+    [ContextMenu("Print Save File Path")]
+    public void PrintSaveFilePath()
+    {
+        string fullSavePath = Path.Combine(Application.persistentDataPath, saveDirectory);
+        string serialNumber = GetCurrentSerialNumber();
+        string fileName = string.IsNullOrEmpty(serialNumber) ? "MindMap_{serialNumber}.json" : $"MindMap_{serialNumber}.json";
+        string fullFilePath = Path.Combine(fullSavePath, fileName);
+        
+        Debug.Log($"=== MIND MAP SAVE LOCATION ===");
+        Debug.Log($"Platform: {Application.platform}");
+        Debug.Log($"Persistent Data Path: {Application.persistentDataPath}");
+        Debug.Log($"Save Directory: {fullSavePath}");
+        Debug.Log($"Current Serial Number: {(string.IsNullOrEmpty(serialNumber) ? "Not Set" : serialNumber)}");
+        Debug.Log($"Save File: {fullFilePath}");
+        Debug.Log($"File Exists: {File.Exists(fullFilePath)}");
+        if (File.Exists(fullFilePath))
+        {
+            FileInfo fileInfo = new FileInfo(fullFilePath);
+            Debug.Log($"File Size: {fileInfo.Length} bytes");
+            Debug.Log($"Last Modified: {fileInfo.LastWriteTime}");
+        }
+        Debug.Log($"=============================");
     }
 
     // Method to verify a specific node
