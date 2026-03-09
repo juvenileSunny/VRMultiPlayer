@@ -1,3 +1,4 @@
+#if TEXT_MESH_PRO_PRESENT || (UGUI_2_0_PRESENT && UNITY_6000_0_OR_NEWER)
 namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard.KeyFunctions
 {
     /// <summary>
@@ -35,11 +36,11 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard.KeyFunction
         {
             if (keyboardContext == null)
                 return;
-            
+
             var keyCode = KeyCode.LeftShift;
-            
+
             // Check the caps lock state of the keyboard. If they key is shifted, check if there is a double click.
-            if (keyboardContext.capsLocked ||(keyboardContext.shifted && key.timeSinceLastClick < keyboardContext.doubleClickInterval))
+            if (keyboardContext.capsLocked || (keyboardContext.shifted && key.timeSinceLastClick < keyboardContext.doubleClickInterval))
                 keyCode = KeyCode.CapsLock;
 
             keyboardContext.ProcessKeyCode(keyCode);
@@ -69,3 +70,4 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard.KeyFunction
         }
     }
 }
+#endif
