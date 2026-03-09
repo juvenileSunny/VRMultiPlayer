@@ -14528,7 +14528,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4610087516668697060, guid: 2b89bb606d6436d4eadbeaeab6b105dd, type: 3}
       propertyPath: backendUrl
-      value: http://eac-st-23:8000
+      value: http://arsc-r-1wm6yb4.ddns.uark.edu:8000
+      objectReference: {fileID: 0}
+    - target: {fileID: 4610087516668697060, guid: 2b89bb606d6436d4eadbeaeab6b105dd, type: 3}
+      propertyPath: loggingData
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4610087516668697060, guid: 2b89bb606d6436d4eadbeaeab6b105dd, type: 3}
       propertyPath: serialNumber
