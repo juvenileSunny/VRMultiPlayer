@@ -964,11 +964,11 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   activeInputHandler: 1
   windowsGamepadBackendHint: 0
-  cloudProjectId: 91ce3b0c-055d-4db1-aac1-fdd6cbd83093
+  cloudProjectId: ae84f0aa-2afe-41ad-bad0-d71c3642ab23
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: VRMultiPlayer
-  organizationId: akharel
+  projectName: asyncvr_uark
+  organizationId: jahedsunny
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

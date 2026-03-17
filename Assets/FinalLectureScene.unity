@@ -58788,6 +58788,10 @@ PrefabInstance:
       propertyPath: m_CastShadows
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7904545763372973562, guid: c4a645c929982ea41a52b5037ee7d94d, type: 3}
+      propertyPath: m_InteractionManager
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 8134302614855669005, guid: c4a645c929982ea41a52b5037ee7d94d, type: 3}
       propertyPath: m_Name
       value: Teleport Anchor (Entrance)
@@ -68569,17 +68573,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1232148478}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &1232384781 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3844163418130402604, guid: 77ac6b10722bcca4a8baf70e44d89e78, type: 3}
-  m_PrefabInstance: {fileID: 4607428429233221380}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 83e4e6cca11330d4088d729ab4fc9d9f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1232556284
 GameObject:
   m_ObjectHideFlags: 0
@@ -83245,7 +83238,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8363325312019961060, guid: 09dc757e762684c09903fcada323ce30, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.003271131
+      value: 0.0019758737
       objectReference: {fileID: 0}
     - target: {fileID: 8554570901202982303, guid: 09dc757e762684c09903fcada323ce30, type: 3}
       propertyPath: m_text
@@ -129412,7 +129405,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38f6bf3d943ac7945842268c9ef1dca6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_InteractionManager: {fileID: 1232384781}
+  m_InteractionManager: {fileID: 0}
   m_Colliders:
   - {fileID: 6828135301799901802}
   m_InteractionLayers:
