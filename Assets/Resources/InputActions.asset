@@ -9,11 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b58a3bc647e70774b8c7225eb3b51e7e, type: 3}
-  m_Name: UnityPlayerAccountSettings
+  m_Script: {fileID: 11500000, guid: 8922a6ca86889d84f8371a29d37b6dc8, type: 3}
+  m_Name: InputActions
   m_EditorClassIdentifier: 
-  clientId: 2c305381-2524-476b-84af-f7ec62251111
-  scopeMask: 7
-  useCustomDeepLinkUri: 0
-  customScheme: 
-  customHost: 
+  InputActionDefinitions: []
+  InputActionSets: []

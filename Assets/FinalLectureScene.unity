@@ -83269,7 +83269,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8363325312019961060, guid: 09dc757e762684c09903fcada323ce30, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.0005085935
+      value: 0.0025008612
       objectReference: {fileID: 0}
     - target: {fileID: 8554570901202982303, guid: 09dc757e762684c09903fcada323ce30, type: 3}
       propertyPath: m_text
@@ -87419,7 +87419,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0714636f6fbd4e8469d79962306a47e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ttsUrl: http://arsc-r-2wm6yb4.ddns.uark.edu:5005/tts
+  ttsUrl: http://192.168.1.25:5005/tts
   audioSource: {fileID: 1619869982}
   blendShapeTargets:
   - skinnedMesh: {fileID: 5587224176858103542}
@@ -125106,6 +125106,14 @@ PrefabInstance:
     - target: {fileID: 8383550645198025334, guid: 77ac6b10722bcca4a8baf70e44d89e78, type: 3}
       propertyPath: m_TagString
       value: PlayerHand
+      objectReference: {fileID: 0}
+    - target: {fileID: 8383550645295993585, guid: 77ac6b10722bcca4a8baf70e44d89e78, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8383550645295993587, guid: 77ac6b10722bcca4a8baf70e44d89e78, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8796977001930958068, guid: 77ac6b10722bcca4a8baf70e44d89e78, type: 3}
       propertyPath: m_AnchorMax.y

@@ -16,6 +16,7 @@ public class SlideTTSAgent : MonoBehaviour
 {
     [Header("TTS HTTP Endpoint (PC IP, not 127.0.0.1 on Quest)")]
     public string ttsUrl = "http://192.168.1.25:5005/tts";
+    // public string ttsUrl = "http://arsc-r-2wm6yb4.ddns.uark.edu:5005/tts";
 
     [Header("Audio")]
     public AudioSource audioSource;
