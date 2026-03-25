@@ -108,4 +108,160 @@ Date:   Wed Mar 25 02:05:31 2026 -0500
  .../XRDeviceSimulator/UI/General/btn_bgbottom.png  |   Bin [31m0[m -> [32m569[m bytes
  .../UI/General/btn_bgbottom.png.meta               |   147 [32m+[m
  .../XRDeviceSimulator/UI/Hands.meta                |     8 [32m+[m
- 
+ .../XRDeviceSimulator/UI/Hands/Hand_Default.png    |   Bin [31m0[m -> [32m9881[m bytes
+ .../UI/Hands/Hand_Default.png.meta                 |   172 [32m+[m
+ .../XRDeviceSimulator/UI/Hands/Hand_Fist.png       |   Bin [31m0[m -> [32m12933[m bytes
+ .../XRDeviceSimulator/UI/Hands/Hand_Fist.png.meta  |   172 [32m+[m
+ .../XRDeviceSimulator/UI/Hands/Hand_Grab.png       |   Bin [31m0[m -> [32m15126[m bytes
+ .../XRDeviceSimulator/UI/Hands/Hand_Grab.png.meta  |   172 [32m+[m
+ .../XRDeviceSimulator/UI/Hands/Hand_Open.png       |   Bin [31m0[m -> [32m9927[m bytes
+ .../XRDeviceSimulator/UI/Hands/Hand_Open.png.meta  |   172 [32m+[m
+ .../XRDeviceSimulator/UI/Hands/Hand_Pinch.png      |   Bin [31m0[m -> [32m12073[m bytes
+ .../XRDeviceSimulator/UI/Hands/Hand_Pinch.png.meta |   172 [32m+[m
+ .../XRDeviceSimulator/UI/Hands/Hand_Poke.png       |   Bin [31m0[m -> [32m7376[m bytes
+ .../XRDeviceSimulator/UI/Hands/Hand_Poke.png.meta  |   172 [32m+[m
+ .../XRDeviceSimulator/UI/Hands/Hand_Thumb.png      |   Bin [31m0[m -> [32m6530[m bytes
+ .../XRDeviceSimulator/UI/Hands/Hand_Thumb.png.meta |   172 [32m+[m
+ .../XRDeviceSimulator/UI/Hands/hand.png            |   Bin [31m0[m -> [32m11255[m bytes
+ .../XRDeviceSimulator/UI/Hands/hand.png.meta       |   147 [32m+[m
+ .../XRDeviceSimulator/UI/Head.meta                 |     8 [32m+[m
+ .../XRDeviceSimulator/UI/Head/HMD.png              |   Bin [31m0[m -> [32m9918[m bytes
+ .../XRDeviceSimulator/UI/Head/HMD.png.meta         |   135 [32m+[m
+ .../XRDeviceSimulator/UI/Head/HMDOverlay.png       |   Bin [31m0[m -> [32m14953[m bytes
+ .../XRDeviceSimulator/UI/Head/HMDOverlay.png.meta  |   159 [32m+[m
+ .../XRDeviceSimulator/UI/Head/HMD_d.png            |   Bin [31m0[m -> [32m11463[m bytes
+ .../XRDeviceSimulator/UI/Head/HMD_d.png.meta       |   135 [32m+[m
+ .../XRDeviceSimulator/UI/Head/MoveRotateTool.png   |   Bin [31m0[m -> [32m15421[m bytes
+ .../UI/Head/MoveRotateTool.png.meta                |   147 [32m+[m
+ .../XRDeviceSimulator/UI/Head/Movement.png         |   Bin [31m0[m -> [32m8801[m bytes
+ .../XRDeviceSimulator/UI/Head/Movement.png.meta    |   147 [32m+[m
+ .../XRDeviceSimulator/UI/Head/XR.png               |   Bin [31m0[m -> [32m8084[m bytes
+ .../XRDeviceSimulator/UI/Head/XR.png.meta          |   147 [32m+[m
+ .../XRDeviceSimulator/UI/Head/xr_hmd.png           |   Bin [31m0[m -> [32m13063[m bytes
+ .../XRDeviceSimulator/UI/Head/xr_hmd.png.meta      |   147 [32m+[m
+ .../XRDeviceSimulator/UI/Mouse.meta                |     8 [32m+[m
+ .../XRDeviceSimulator/UI/Mouse/Cursor.png          |   Bin [31m0[m -> [32m7340[m bytes
+ .../XRDeviceSimulator/UI/Mouse/Cursor.png.meta     |   147 [32m+[m
+ .../XRDeviceSimulator/UI/Mouse/Mouse.png           |   Bin [31m0[m -> [32m8314[m bytes
+ .../XRDeviceSimulator/UI/Mouse/Mouse.png.meta      |   147 [32m+[m
+ .../XRDeviceSimulator/UI/Mouse/MouseMoveAround.png |   Bin [31m0[m -> [32m10824[m bytes
+ .../UI/Mouse/MouseMoveAround.png.meta              |   147 [32m+[m
+ .../XRDeviceSimulator/UI/Mouse/MouseR.png          |   Bin [31m0[m -> [32m13952[m bytes
+ .../XRDeviceSimulator/UI/Mouse/MouseR.png.meta     |   135 [32m+[m
+ .../XRDeviceSimulator/UI/Mouse/MouseR_d.png        |   Bin [31m0[m -> [32m8840[m bytes
+ .../XRDeviceSimulator/UI/Mouse/MouseR_d.png.meta   |   147 [32m+[m
+ .../UI/XR Device Simulator UI.prefab               | 14338 [32m++++++++++[m
+ .../UI/XR Device Simulator UI.prefab.meta          |     7 [32m+[m
+ .../XR Device Controller Controls.inputactions     |   417 [32m+[m
+ ...XR Device Controller Controls.inputactions.meta |    14 [32m+[m
+ .../XR Device Hand Controls.inputactions           |   134 [32m+[m
+ .../XR Device Hand Controls.inputactions.meta      |    14 [32m+[m
+ .../XR Device Simulator Controls.inputactions      |   580 [32m+[m
+ .../XR Device Simulator Controls.inputactions.meta |    14 [32m+[m
+ .../XRDeviceSimulator/XR Device Simulator.prefab   |   337 [32m+[m
+ .../XR Device Simulator.prefab.meta                |     7 [32m+[m
+ .../XRInteractionSimulator.meta                    |     8 [32m+[m
+ .../XRInteractionSimulator/Scripts.meta            |     8 [32m+[m
+ .../XRInteractionSimulatorInputFeedbackUI.cs       |   888 [32m+[m
+ .../XRInteractionSimulatorInputFeedbackUI.cs.meta  |    11 [32m+[m
+ .../Scripts/XRInteractionSimulatorPlayModeMenu.cs  |   693 [32m+[m
+ .../XRInteractionSimulatorPlayModeMenu.cs.meta     |    11 [32m+[m
+ .../XRInteractionSimulator/UI.meta                 |     8 [32m+[m
+ .../XRInteractionSimulator/UI/Controller.meta      |     8 [32m+[m
+ .../UI/Controller/BothControllers.png              |   Bin [31m0[m -> [32m1444[m bytes
+ .../UI/Controller/BothControllers.png.meta         |   114 [32m+[m
+ .../UI/Controller/ControllerLeft.png               |   Bin [31m0[m -> [32m2468[m bytes
+ .../UI/Controller/ControllerLeft.png.meta          |   140 [32m+[m
+ .../UI/Controller/ControllerRight.png              |   Bin [31m0[m -> [32m2527[m bytes
+ .../UI/Controller/ControllerRight.png.meta         |   140 [32m+[m
+ .../UI/Controller/LeftController.png               |   Bin [31m0[m -> [32m1106[m bytes
+ .../UI/Controller/LeftController.png.meta          |   114 [32m+[m
+ .../UI/Controller/LeftControllerOutline@2x.png     |   Bin [31m0[m -> [32m1923[m bytes
+ .../Controller/LeftControllerOutline@2x.png.meta   |   140 [32m+[m
+ .../UI/Controller/RightController.png              |   Bin [31m0[m -> [32m1097[m bytes
+ .../UI/Controller/RightController.png.meta         |   114 [32m+[m
+ .../UI/Controller/RightControllerOutline@2x.png    |   Bin [31m0[m -> [32m1882[m bytes
+ .../Controller/RightControllerOutline@2x.png.meta  |   140 [32m+[m
+ .../XRInteractionSimulator/UI/General.meta         |     8 [32m+[m
+ .../UI/General/SwitchIcon.png                      |   Bin [31m0[m -> [32m306[m bytes
+ .../UI/General/SwitchIcon.png.meta                 |   140 [32m+[m
+ .../XRInteractionSimulator/UI/General/bg.png       |   Bin [31m0[m -> [32m489[m bytes
+ .../XRInteractionSimulator/UI/General/bg.png.meta  |   114 [32m+[m
+ .../XRInteractionSimulator/UI/Hands.meta           |     8 [32m+[m
+ .../XRInteractionSimulator/UI/Hands/Grab.png       |   Bin [31m0[m -> [32m900[m bytes
+ .../XRInteractionSimulator/UI/Hands/Grab.png.meta  |   114 [32m+[m
+ .../XRInteractionSimulator/UI/Hands/Hand_Left.png  |   Bin [31m0[m -> [32m1186[m bytes
+ .../UI/Hands/Hand_Left.png.meta                    |   114 [32m+[m
+ .../XRInteractionSimulator/UI/Hands/Hand_Right.png |   Bin [31m0[m -> [32m1166[m bytes
+ .../UI/Hands/Hand_Right.png.meta                   |   114 [32m+[m
+ .../XRInteractionSimulator/UI/Hands/Hands.png      |   Bin [31m0[m -> [32m1315[m bytes
+ .../XRInteractionSimulator/UI/Hands/Hands.png.meta |   114 [32m+[m
+ .../UI/Hands/LeftHandOutline@2x.png                |   Bin [31m0[m -> [32m1103[m bytes
+ .../UI/Hands/LeftHandOutline@2x.png.meta           |   140 [32m+[m
+ .../UI/Hands/LeftHandOutlineThin@2x.png            |   Bin [31m0[m -> [32m963[m bytes
+ .../UI/Hands/LeftHandOutlineThin@2x.png.meta       |   140 [32m+[m
+ .../XRInteractionSimulator/UI/Hands/Pinch.png      |   Bin [31m0[m -> [32m1373[m bytes
+ .../XRInteractionSimulator/UI/Hands/Pinch.png.meta |   114 [32m+[m
+ .../XRInteractionSimulator/UI/Hands/Poke.png       |   Bin [31m0[m -> [32m929[m bytes
+ .../XRInteractionSimulator/UI/Hands/Poke.png.meta  |   114 [32m+[m
+ .../UI/Hands/RightHandOutline@2x.png               |   Bin [31m0[m -> [32m1107[m bytes
+ .../UI/Hands/RightHandOutline@2x.png.meta          |   140 [32m+[m
+ .../UI/Hands/RightHandOutlineThin@2x.png           |   Bin [31m0[m -> [32m900[m bytes
+ .../UI/Hands/RightHandOutlineThin@2x.png.meta      |   140 [32m+[m
+ .../XRInteractionSimulator/UI/Headset.meta         |     8 [32m+[m
+ .../UI/Headset/HeadsetOutline.png                  |   Bin [31m0[m -> [32m1014[m bytes
+ .../UI/Headset/HeadsetOutline.png.meta             |   114 [32m+[m
+ .../UI/Headset/HeadsetOutline@2x.png               |   Bin [31m0[m -> [32m1268[m bytes
+ .../UI/Headset/HeadsetOutline@2x.png.meta          |   140 [32m+[m
+ .../XRInteractionSimulator/UI/Highlight.meta       |     8 [32m+[m
+ .../UI/Highlight/RoundedHighlight.png              |   Bin [31m0[m -> [32m869[m bytes
+ .../UI/Highlight/RoundedHighlight.png.meta         |   159 [32m+[m
+ .../UI/Highlight/highlight_head.png                |   Bin [31m0[m -> [32m1167[m bytes
+ .../UI/Highlight/highlight_head.png.meta           |   140 [32m+[m
+ .../UI/Highlight/highlight_rect_horizontal.png     |   Bin [31m0[m -> [32m914[m bytes
+ .../Highlight/highlight_rect_horizontal.png.meta   |   140 [32m+[m
+ .../UI/Highlight/highlight_rect_vertical.png       |   Bin [31m0[m -> [32m2370[m bytes
+ .../UI/Highlight/highlight_rect_vertical.png.meta  |   140 [32m+[m
+ .../XRInteractionSimulator/UI/Modes.meta           |     8 [32m+[m
+ .../UI/Modes/MirrorMode@2x.png                     |   Bin [31m0[m -> [32m510[m bytes
+ .../UI/Modes/MirrorMode@2x.png.meta                |   140 [32m+[m
+ .../UI/Modes/NavigationMode@2x.png                 |   Bin [31m0[m -> [32m589[m bytes
+ .../UI/Modes/NavigationMode@2x.png.meta            |   140 [32m+[m
+ .../XRInteractionSimulator/UI/Rotate.meta          |     8 [32m+[m
+ .../UI/Rotate/BackRotate@2x.png                    |   Bin [31m0[m -> [32m774[m bytes
+ .../UI/Rotate/BackRotate@2x.png.meta               |   140 [32m+[m
+ .../UI/Rotate/ForwardRotate@2x.png                 |   Bin [31m0[m -> [32m736[m bytes
+ .../UI/Rotate/ForwardRotate@2x.png.meta            |   140 [32m+[m
+ .../UI/Rotate/LeftRotate@2x.png                    |   Bin [31m0[m -> [32m599[m bytes
+ .../UI/Rotate/LeftRotate@2x.png.meta               |   140 [32m+[m
+ .../UI/Rotate/RightRotate@2x.png                   |   Bin [31m0[m -> [32m626[m bytes
+ .../UI/Rotate/RightRotate@2x.png.meta              |   140 [32m+[m
+ .../UI/Rotate/RotateDownArrow.png                  |   Bin [31m0[m -> [32m290[m bytes
+ .../UI/Rotate/RotateDownArrow.png.meta             |   140 [32m+[m
+ .../UI/Rotate/RotateLeftArrow.png                  |   Bin [31m0[m -> [32m268[m bytes
+ .../UI/Rotate/RotateLeftArrow.png.meta             |   140 [32m+[m
+ .../UI/Rotate/RotateRightArrow.png                 |   Bin [31m0[m -> [32m275[m bytes
+ .../UI/Rotate/RotateRightArrow.png.meta            |   140 [32m+[m
+ .../UI/Rotate/RotateUpArrow.png                    |   Bin [31m0[m -> [32m274[m bytes
+ .../UI/Rotate/RotateUpArrow.png.meta               |   140 [32m+[m
+ .../XRInteractionSimulator/UI/Translate.meta       |     8 [32m+[m
+ .../UI/Translate/TranslateBack@2x.png              |   Bin [31m0[m -> [32m477[m bytes
+ .../UI/Translate/TranslateBack@2x.png.meta         |   140 [32m+[m
+ .../UI/Translate/TranslateDown.png                 |   Bin [31m0[m -> [32m698[m bytes
+ .../UI/Translate/TranslateDown.png.meta            |   114 [32m+[m
+ .../UI/Translate/TranslateForward@2x.png           |   Bin [31m0[m -> [32m486[m bytes
+ .../UI/Translate/TranslateForward@2x.png.meta      |   140 [32m+[m
+ .../UI/Translate/TranslateLeft@2x.png              |   Bin [31m0[m -> [32m460[m bytes
+ .../UI/Translate/TranslateLeft@2x.png.meta         |   140 [32m+[m
+ .../UI/Translate/TranslateRight@2x.png             |   Bin [31m0[m -> [32m464[m bytes
+ .../UI/Translate/TranslateRight@2x.png.meta        |   140 [32m+[m
+ .../UI/Translate/TranslateUp.png                   |   Bin [31m0[m -> [32m725[m bytes
+ .../UI/Translate/TranslateUp.png.meta              |   114 [32m+[m
+ .../UI/XR Interaction Simulator UI.prefab          | 27607 [32m+++++++++++++++++++[m
+ .../UI/XR Interaction Simulator UI.prefab.meta     |     7 [32m+[m
+ ...XR Interaction Controller Controls.inputactions |   417 [32m+[m
+ ...teraction Controller Controls.inputactions.meta |    14 [32m+[m
+ .../XR Interaction Simulator Controls.inputactions |   572 [32m+[m
+ ...nteraction Simulator Controls.inputactions.meta |    14 [32m+[m
+ .../XR Interaction Simulator.prefab                |  1163 [32m+[m
+ .../XR Intera
