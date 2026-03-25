@@ -1,0 +1,33 @@
+{
+    "name": "ThrashPanda.VR.Simulator.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Unity.XR.Management.Editor",
+        "Unity.XR.Management",
+        "ThrashPanda.VR.Simulator",
+        "Unity.XR.CoreUtils",
+        "Unity.XR.Interaction.Toolkit"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.xr.interaction.toolkit",
+            "expression": "(,2.0)",
+            "define": "USE_INTERACTION_TOOLKIT"
+        },
+        {
+            "name": "com.unity.xr.interaction.toolkit",
+            "expression": "2",
+            "define": "USE_INTERACTION_TOOLKIT_2"
+        }
+    ],
+    "noEngineReferences": false
+}

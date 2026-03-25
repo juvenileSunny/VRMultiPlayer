@@ -1,0 +1,111 @@
+[33mcommit 1d373671804c5dfdbf5aa5de6ecfa5e259e46678[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mPC+VR[m[33m)[m
+Author: Mohammad Jahed Murad Sunny <64752337+juvenileSunny@users.noreply.github.com>
+Date:   Wed Mar 25 02:05:31 2026 -0500
+
+    Add PC and VR asymmetric control setup
+
+ Assets/FinalLectureScene.unity                     |   273 [32m+[m[31m-[m
+ Assets/Resources/OVROverlayCanvasSettings.asset    |    19 [32m+[m
+ .../Resources/OVROverlayCanvasSettings.asset.meta  |     8 [32m+[m
+ Assets/Samples/VR Simulator XR Plugin.meta         |     8 [32m+[m
+ Assets/Samples/VR Simulator XR Plugin/2.1.0.meta   |     8 [32m+[m
+ .../VR Simulator XR Plugin/2.1.0/Grab Demo.meta    |     8 [32m+[m
+ .../2.1.0/Grab Demo/demoScene.meta                 |     8 [32m+[m
+ .../2.1.0/Grab Demo/demoScene.unity                |  2999 [32m++[m
+ .../2.1.0/Grab Demo/demoScene.unity.meta           |     7 [32m+[m
+ .../2.1.0/Grab Demo/demoScene/LightingData.asset   |   Bin [31m0[m -> [32m18944[m bytes
+ .../Grab Demo/demoScene/LightingData.asset.meta    |     8 [32m+[m
+ .../Grab Demo/demoScene/Lightmap-0_comp_dir.png    |   Bin [31m0[m -> [32m314815[m bytes
+ .../demoScene/Lightmap-0_comp_dir.png.meta         |    91 [32m+[m
+ .../Grab Demo/demoScene/Lightmap-0_comp_light.exr  |   Bin [31m0[m -> [32m817438[m bytes
+ .../demoScene/Lightmap-0_comp_light.exr.meta       |    91 [32m+[m
+ .../Grab Demo/demoScene/Lightmap-1_comp_dir.png    |   Bin [31m0[m -> [32m8423[m bytes
+ .../demoScene/Lightmap-1_comp_dir.png.meta         |    91 [32m+[m
+ .../Grab Demo/demoScene/Lightmap-1_comp_light.exr  |   Bin [31m0[m -> [32m43985[m bytes
+ .../demoScene/Lightmap-1_comp_light.exr.meta       |    91 [32m+[m
+ .../Grab Demo/demoScene/ReflectionProbe-0.exr      |   Bin [31m0[m -> [32m133554[m bytes
+ .../Grab Demo/demoScene/ReflectionProbe-0.exr.meta |    91 [32m+[m
+ .../VR Simulator XR Plugin/2.1.0/Input Demo.meta   |     8 [32m+[m
+ .../2.1.0/Input Demo/Script.meta                   |     8 [32m+[m
+ .../2.1.0/Input Demo/Script/ButtonCheck.cs         |    98 [32m+[m
+ .../2.1.0/Input Demo/Script/ButtonCheck.cs.meta    |    11 [32m+[m
+ .../2.1.0/Input Demo/Script/StickCheck.cs          |    48 [32m+[m
+ .../2.1.0/Input Demo/Script/StickCheck.cs.meta     |    11 [32m+[m
+ .../ThrashPanda.VR.Simulator_Reference.asmref      |     3 [32m+[m
+ .../ThrashPanda.VR.Simulator_Reference.asmref.meta |     7 [32m+[m
+ .../2.1.0/Input Demo/inputDemo.meta                |     8 [32m+[m
+ .../2.1.0/Input Demo/inputDemo.unity               |  3568 [32m+++[m
+ .../2.1.0/Input Demo/inputDemo.unity.meta          |     7 [32m+[m
+ .../2.1.0/Input Demo/inputDemo/LightingData.asset  |   Bin [31m0[m -> [32m18944[m bytes
+ .../Input Demo/inputDemo/LightingData.asset.meta   |     8 [32m+[m
+ .../Input Demo/inputDemo/Lightmap-0_comp_dir.png   |   Bin [31m0[m -> [32m309101[m bytes
+ .../inputDemo/Lightmap-0_comp_dir.png.meta         |    92 [32m+[m
+ .../Input Demo/inputDemo/Lightmap-0_comp_light.exr |   Bin [31m0[m -> [32m802912[m bytes
+ .../inputDemo/Lightmap-0_comp_light.exr.meta       |    92 [32m+[m
+ .../Input Demo/inputDemo/Lightmap-1_comp_dir.png   |   Bin [31m0[m -> [32m8233[m bytes
+ .../inputDemo/Lightmap-1_comp_dir.png.meta         |    92 [32m+[m
+ .../Input Demo/inputDemo/Lightmap-1_comp_light.exr |   Bin [31m0[m -> [32m43997[m bytes
+ .../inputDemo/Lightmap-1_comp_light.exr.meta       |    92 [32m+[m
+ .../Input Demo/inputDemo/ReflectionProbe-0.exr     |   Bin [31m0[m -> [32m133551[m bytes
+ .../inputDemo/ReflectionProbe-0.exr.meta           |    92 [32m+[m
+ .../3.1.2/XR Device Simulator.meta                 |     8 [32m+[m
+ .../Hand Expression Captures.meta                  |     8 [32m+[m
+ .../Fist Expression Capture.asset                  |   121 [32m+[m
+ .../Fist Expression Capture.asset.meta             |     8 [32m+[m
+ .../Grab Expression Capture.asset                  |   121 [32m+[m
+ .../Grab Expression Capture.asset.meta             |     8 [32m+[m
+ .../Open Expression Capture.asset                  |   121 [32m+[m
+ .../Open Expression Capture.asset.meta             |     8 [32m+[m
+ .../Pinch Expression Capture.asset                 |   121 [32m+[m
+ .../Pinch Expression Capture.asset.meta            |     8 [32m+[m
+ .../Poke Expression Capture.asset                  |   121 [32m+[m
+ .../Poke Expression Capture.asset.meta             |     8 [32m+[m
+ .../Resting Expression Capture.asset               |   121 [32m+[m
+ .../Resting Expression Capture.asset.meta          |     8 [32m+[m
+ .../Thumb Expression Capture.asset                 |   121 [32m+[m
+ .../Thumb Expression Capture.asset.meta            |     8 [32m+[m
+ ...eraction.Toolkit.Samples.DeviceSimulator.asmdef |    50 [32m+[m
+ ...ion.Toolkit.Samples.DeviceSimulator.asmdef.meta |     7 [32m+[m
+ .../XR Device Simulator/XRDeviceSimulator.meta     |     8 [32m+[m
+ .../XRDeviceSimulator/Scripts.meta                 |     8 [32m+[m
+ .../Scripts/XRDeviceSimulatorControllerUI.cs       |   253 [32m+[m
+ .../Scripts/XRDeviceSimulatorControllerUI.cs.meta  |    11 [32m+[m
+ .../Scripts/XRDeviceSimulatorHandsUI.cs            |   206 [32m+[m
+ .../Scripts/XRDeviceSimulatorHandsUI.cs.meta       |    11 [32m+[m
+ .../Scripts/XRDeviceSimulatorUI.cs                 |  1181 [32m+[m
+ .../Scripts/XRDeviceSimulatorUI.cs.meta            |    11 [32m+[m
+ .../XR Device Simulator/XRDeviceSimulator/UI.meta  |     8 [32m+[m
+ .../XRDeviceSimulator/UI/Controller.meta           |     8 [32m+[m
+ .../UI/Controller/ControllerLeft.png               |   Bin [31m0[m -> [32m25129[m bytes
+ .../UI/Controller/ControllerLeft.png.meta          |   159 [32m+[m
+ .../UI/Controller/ControllerOverlayLinesLeft.png   |   Bin [31m0[m -> [32m10158[m bytes
+ .../Controller/ControllerOverlayLinesLeft.png.meta |   159 [32m+[m
+ .../UI/Controller/ControllerOverlayLinesRight.png  |   Bin [31m0[m -> [32m10696[m bytes
+ .../ControllerOverlayLinesRight.png.meta           |   159 [32m+[m
+ .../UI/Controller/ControllerRight.png              |   Bin [31m0[m -> [32m25056[m bytes
+ .../UI/Controller/ControllerRight.png.meta         |   159 [32m+[m
+ .../XRDeviceSimulator/UI/Controller/xr_ctlr.png    |   Bin [31m0[m -> [32m17982[m bytes
+ .../UI/Controller/xr_ctlr.png.meta                 |   147 [32m+[m
+ .../XRDeviceSimulator/UI/General.meta              |     8 [32m+[m
+ .../XRDeviceSimulator/UI/General/CloseWindow.png   |   Bin [31m0[m -> [32m7147[m bytes
+ .../UI/General/CloseWindow.png.meta                |   159 [32m+[m
+ .../UI/General/CycleXRDevices.png                  |   Bin [31m0[m -> [32m7983[m bytes
+ .../UI/General/CycleXRDevices.png.meta             |   159 [32m+[m
+ .../UI/General/DeviceSimUI_bg.png                  |   Bin [31m0[m -> [32m1945[m bytes
+ .../UI/General/DeviceSimUI_bg.png.meta             |   159 [32m+[m
+ .../XRDeviceSimulator/UI/General/Gripper.png       |   Bin [31m0[m -> [32m3154[m bytes
+ .../XRDeviceSimulator/UI/General/Gripper.png.meta  |   147 [32m+[m
+ .../XRDeviceSimulator/UI/General/KeyboardIcon.png  |   Bin [31m0[m -> [32m5866[m bytes
+ .../UI/General/KeyboardIcon.png.meta               |   159 [32m+[m
+ .../XRDeviceSimulator/UI/General/Locked.png        |   Bin [31m0[m -> [32m5673[m bytes
+ .../XRDeviceSimulator/UI/General/Locked.png.meta   |   159 [32m+[m
+ .../XRDeviceSimulator/UI/General/Look.png          |   Bin [31m0[m -> [32m6733[m bytes
+ .../XRDeviceSimulator/UI/General/Look.png.meta     |   159 [32m+[m
+ .../XRDeviceSimulator/UI/General/OpenWindow.png    |   Bin [31m0[m -> [32m5680[m bytes
+ .../UI/General/OpenWindow.png.meta                 |   159 [32m+[m
+ .../XRDeviceSimulator/UI/General/Unlocked.png      |   Bin [31m0[m -> [32m4359[m bytes
+ .../XRDeviceSimulator/UI/General/Unlocked.png.meta |   159 [32m+[m
+ .../XRDeviceSimulator/UI/General/btn_bgbottom.png  |   Bin [31m0[m -> [32m569[m bytes
+ .../UI/General/btn_bgbottom.png.meta               |   147 [32m+[m
+ .../XRDeviceSimulator/UI/Hands.meta                |     8 [32m+[m
+ 

@@ -1,0 +1,1 @@
+NDSearch.OnPrefixDataLoaded("tra",["Variable"],[["trackingOriginMode",,[["VRSimulator",,,,0,"File3:Script/VRSimulator.cs:VRSimulator.trackingOriginMode","CSharpClass:VRSimulator:trackingOriginMode"]]]]);

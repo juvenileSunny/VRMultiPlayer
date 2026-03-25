@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: b2c97d52de5d34a429c96ca4365aef42
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - xRRig: {instanceID: 0}
+  - leftHand: {instanceID: 0}
+  - rightHand: {instanceID: 0}
+  - directionPrefab: {fileID: -927199367670048503, guid: 9084c362cdd0fc6459acea92ecdfeb7f,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

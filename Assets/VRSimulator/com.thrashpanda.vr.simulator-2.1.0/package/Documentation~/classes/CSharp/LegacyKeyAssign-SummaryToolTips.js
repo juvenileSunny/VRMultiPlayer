@@ -1,0 +1,1 @@
+NDSummary.OnToolTipsLoaded("CSharpClass:LegacyKeyAssign",{96:"<div class=\"NDToolTip TClass LCSharp\"><div class=\"NDClassPrototype\" id=\"NDClassPrototype96\"><div class=\"CPEntry TClass Current\"><div class=\"CPModifiers\"><span class=\"SHKeyword\">static</span></div><div class=\"CPName\">LegacyKeyAssign</div></div></div></div>"});

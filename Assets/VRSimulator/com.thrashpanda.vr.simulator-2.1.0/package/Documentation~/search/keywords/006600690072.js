@@ -1,0 +1,1 @@
+NDSearch.OnPrefixDataLoaded("fir",["Variable"],[["firstTime",,[["InitialNote",,,,0,"File:Editor/InitialNote.cs:InitialNote.firstTime","CSharpClass:InitialNote:firstTime"]]]]);

@@ -1,0 +1,1 @@
+NDSearch.OnPrefixDataLoaded("req",["Variable"],[["Request",,[["XRPluginInstaller",,,,0,"File:Editor/XRPluginInstaller.cs:XRPluginInstaller.Request","CSharpClass:XRPluginInstaller:Request"]]]]);

@@ -1,0 +1,11 @@
+{
+	"name": "VR Simulator XR Plugin",
+	"version": "1.0.0",
+	"libraryName": "VRSimulatorXRPlugin",
+
+	"inputs": [
+		{
+			"id": "simulator input"
+		}
+	]
+}

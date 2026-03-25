@@ -1,0 +1,1 @@
+NDSearch.OnPrefixDataLoaded("vec",["Class"],[["VectorHelper",,[[,,,,0,"File3:Script/VectorHelper.cs:VectorHelper","CSharpClass:VectorHelper"]]]]);
