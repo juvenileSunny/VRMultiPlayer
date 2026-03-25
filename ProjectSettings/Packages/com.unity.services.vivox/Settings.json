@@ -19,12 +19,20 @@
             {
                 "type": "System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
                 "key": "domain",
+<<<<<<< HEAD
                 "value": "{\"m_Value\":\"\"}"
+=======
+                "value": "{\"m_Value\":\"mtu1xp.vivox.com\"}"
+>>>>>>> 059fd2f9c189f32db8ce9f5261964cdd7f190eb9
             },
             {
                 "type": "System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
                 "key": "isTestMode",
+<<<<<<< HEAD
                 "value": "{\"m_Value\":true}"
+=======
+                "value": "{\"m_Value\":false}"
+>>>>>>> 059fd2f9c189f32db8ce9f5261964cdd7f190eb9
             }
         ]
     }
