@@ -9,7 +9,7 @@ using UnityEditor;
 [DefaultExecutionOrder(100)]
 public class VRSimulatorController : MonoBehaviour
 {
-#if UNITY_EDITOR || VRSim_include_in_build
+#if VRSim_include_in_build
     //Variable: offsetCompensation
     //Defines if an offset in world space should be considered in the simulation, otherwise the local position and rotation of the simulated controller will be the world space position and rotation of the XRController.
     [SerializeField]
