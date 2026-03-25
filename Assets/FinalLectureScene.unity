@@ -83466,11 +83466,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8363325312019961060, guid: 09dc757e762684c09903fcada323ce30, type: 3}
       propertyPath: m_AnchoredPosition.y
-<<<<<<< HEAD
       value: 0.0057967477
-=======
-      value: 0.0025008612
->>>>>>> 059fd2f9c189f32db8ce9f5261964cdd7f190eb9
       objectReference: {fileID: 0}
     - target: {fileID: 8554570901202982303, guid: 09dc757e762684c09903fcada323ce30, type: 3}
       propertyPath: m_text
@@ -87620,11 +87616,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0714636f6fbd4e8469d79962306a47e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-<<<<<<< HEAD
   ttsUrl: http://127.0.0.1:5005/tts
-=======
-  ttsUrl: http://192.168.1.25:5005/tts
->>>>>>> 059fd2f9c189f32db8ce9f5261964cdd7f190eb9
   audioSource: {fileID: 1619869982}
   blendShapeTargets:
   - skinnedMesh: {fileID: 5587224176858103542}
