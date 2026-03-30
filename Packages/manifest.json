@@ -3,7 +3,7 @@
     "com.eac.dataecho.logger": "https://github.com/eac-basu-lab/dataecho-unity-plugin.git",
     "com.meta.xr.sdk.all": "85.0.0",
     "com.srcnalt.openai-unity": "https://github.com/srcnalt/OpenAI-Unity.git",
-    "com.thrashpanda.vr.simulator": "file:P:\\gitRepo\\VRMultiPlayer\\Assets\\VRSimulator\\com.thrashpanda.vr.simulator-2.1.0.tgz",
+    "com.thrashpanda.vr.simulator": "file:D:\\ATIT\\Projects\\Unity\\FinalLectureScene\\VRMultiPlayer\\Assets\\VRSimulator\\com.thrashpanda.vr.simulator-2.1.0.tgz",
     "com.unity.animation.rigging": "1.2.1",
     "com.unity.burst": "1.8.28",
     "com.unity.cloud.gltfast": "6.0.1",

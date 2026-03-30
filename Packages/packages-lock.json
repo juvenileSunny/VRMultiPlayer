@@ -106,7 +106,7 @@
       "hash": "054467e2a2daccf7f23ff8f7165f1d832815dc70"
     },
     "com.thrashpanda.vr.simulator": {
-      "version": "file:P:\\gitRepo\\VRMultiPlayer\\Assets\\VRSimulator\\com.thrashpanda.vr.simulator-2.1.0.tgz",
+      "version": "file:D:\\ATIT\\Projects\\Unity\\FinalLectureScene\\VRMultiPlayer\\Assets\\VRSimulator\\com.thrashpanda.vr.simulator-2.1.0.tgz",
       "depth": 0,
       "source": "local-tarball",
       "dependencies": {
