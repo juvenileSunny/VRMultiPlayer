@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &428893002649168
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7637685563368714911}
+  - component: {fileID: 3604439109286207771}
+  - component: {fileID: 5688251990483129351}
+  - component: {fileID: 3165510833133311051}
+  m_Layer: 0
+  m_Name: XRModeManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7637685563368714911
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 428893002649168}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -4.701351, y: 1.2493331, z: -5.5148106}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3604439109286207771
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 428893002649168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 999fdb25875895c47954ecde8bd1173f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  xrDeviceSimulatorObject: {fileID: 0}
+  inputActionManager: {fileID: 0}
+  vrInputActions: {fileID: -944628639613478452, guid: aa2c615566fb6a6449c1b438e23ecacd, type: 3}
+  pcSimulatorActions: {fileID: -944628639613478452, guid: da2b439d1a2de5c46a4f428f8cf4fe19, type: 3}
+  pcControllerActions: {fileID: -944628639613478452, guid: ce5085c9eb3eadb429b20085979b3af4, type: 3}
+  vrOnlyComponents: []
+  pcOnlyComponents: []
+  forcePCMode: 0
+  forceVRMode: 0
+  requireSimulatorObjectActiveForPCMode: 1
+--- !u!114 &5688251990483129351
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 428893002649168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e276d3fc9867124d80ca026302d6f1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  forcePCMode: 0
+  forceVRMode: 0
+  xrDeviceSimulatorObject: {fileID: 0}
+  requireSimulatorObjectActiveForPCMode: 1
+  leftInteractorRoot: {fileID: 0}
+  rightInteractorRoot: {fileID: 0}
+  leftControllerVisual: {fileID: 0}
+  rightControllerVisual: {fileID: 0}
+  leftDirectInteractor: {fileID: 0}
+  rightDirectInteractor: {fileID: 0}
+  leftPokeInteractor: {fileID: 0}
+  rightPokeInteractor: {fileID: 0}
+  leftRayInteractor: {fileID: 0}
+  rightRayInteractor: {fileID: 0}
+  leftRayLineVisual: {fileID: 0}
+  rightRayLineVisual: {fileID: 0}
+  leftLineRenderer: {fileID: 0}
+  rightLineRenderer: {fileID: 0}
+  leftReticleVisual: {fileID: 0}
+  rightReticleVisual: {fileID: 0}
+  vrRayDistance: 5
+  pcRayDistance: 200
+  hideControllerVisualsInPCMode: 1
+  disableDirectInteractorsInPCMode: 1
+  disablePokeInteractorsInPCMode: 1
+  disableLeftInteractorRootInPCMode: 1
+  keepRightInteractorRootActiveInPCMode: 1
+--- !u!114 &3165510833133311051
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 428893002649168}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5c97bb69bb5a524bb980bcd9fa66b08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  visualsToHide:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}

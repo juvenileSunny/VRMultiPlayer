@@ -1454,6 +1454,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8456865950788926936, guid: 1eb37597fefbbeb43a3093e024347c65, type: 3}
+      propertyPath: m_KeyboardOffset.y
+      value: -0.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 8456865950788926936, guid: 1eb37597fefbbeb43a3093e024347c65, type: 3}
+      propertyPath: m_FacingKeyboardThreshold
+      value: 0.787
+      objectReference: {fileID: 0}
     - target: {fileID: 9054381405350197360, guid: 1eb37597fefbbeb43a3093e024347c65, type: 3}
       propertyPath: m_Name
       value: TextField

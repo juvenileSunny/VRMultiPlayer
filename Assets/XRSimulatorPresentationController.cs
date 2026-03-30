@@ -1,3 +1,5 @@
+#if UNITY_EDITOR || UNITY_STANDALONE
+
 using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -8,6 +10,10 @@ public class XRSimulatorPresentationController : MonoBehaviour
     [Header("Mode Override")]
     public bool forcePCMode = false;
     public bool forceVRMode = false;
+
+    [Header("Simulator Build Gate")]
+    public GameObject xrDeviceSimulatorObject;
+    public bool requireSimulatorObjectActiveForPCMode = true;
 
     [Header("Interactor Roots")]
     public GameObject leftInteractorRoot;
@@ -54,14 +60,34 @@ public class XRSimulatorPresentationController : MonoBehaviour
 
     private void Start()
     {
+        bool simulatorAvailable =
+            xrDeviceSimulatorObject != null &&
+            xrDeviceSimulatorObject.activeInHierarchy;
+
         bool isVR;
 
         if (forcePCMode)
+        {
             isVR = false;
+        }
         else if (forceVRMode)
+        {
             isVR = true;
+        }
         else
-            isVR = XRSettings.isDeviceActive;
+        {
+            bool headsetActive = XRSettings.isDeviceActive;
+
+            // No HMD + simulator not included/active => do not enter PC simulator mode
+            if (requireSimulatorObjectActiveForPCMode && !headsetActive && !simulatorAvailable)
+            {
+                Debug.Log("XRSimulatorPresentationController: No HMD and simulator not active/included. Applying VR-style safe state.");
+                ApplyVRMode();
+                return;
+            }
+
+            isVR = headsetActive;
+        }
 
         ApplyMode(isVR);
     }
@@ -78,35 +104,33 @@ public class XRSimulatorPresentationController : MonoBehaviour
     {
         Debug.Log("XRSimulatorPresentationController: VR mode");
 
-        // Interactor roots
+        if (xrDeviceSimulatorObject != null)
+            xrDeviceSimulatorObject.SetActive(false);
+
         if (leftInteractorRoot != null)
             leftInteractorRoot.SetActive(true);
 
         if (rightInteractorRoot != null)
             rightInteractorRoot.SetActive(true);
 
-        // Controller visuals
         if (leftControllerVisual != null)
             leftControllerVisual.SetActive(true);
 
         if (rightControllerVisual != null)
             rightControllerVisual.SetActive(true);
 
-        // Direct interactors
         if (leftDirectInteractor != null)
             leftDirectInteractor.enabled = true;
 
         if (rightDirectInteractor != null)
             rightDirectInteractor.enabled = true;
 
-        // Poke interactors
         if (leftPokeInteractor != null)
             leftPokeInteractor.enabled = true;
 
         if (rightPokeInteractor != null)
             rightPokeInteractor.enabled = true;
 
-        // Ray interactors
         if (leftRayInteractor != null)
         {
             leftRayInteractor.enabled = true;
@@ -119,21 +143,18 @@ public class XRSimulatorPresentationController : MonoBehaviour
             rightRayInteractor.maxRaycastDistance = vrRayDistance;
         }
 
-        // Line visuals
         if (leftRayLineVisual != null)
             leftRayLineVisual.enabled = true;
 
         if (rightRayLineVisual != null)
             rightRayLineVisual.enabled = true;
 
-        // Line renderers
         if (leftLineRenderer != null)
             leftLineRenderer.enabled = true;
 
         if (rightLineRenderer != null)
             rightLineRenderer.enabled = true;
 
-        // Reticles
         if (leftReticleVisual != null)
             leftReticleVisual.SetActive(true);
 
@@ -145,12 +166,13 @@ public class XRSimulatorPresentationController : MonoBehaviour
     {
         Debug.Log("XRSimulatorPresentationController: PC / simulator mode");
 
-        // Left interactor root completely off if desired
+        if (xrDeviceSimulatorObject != null)
+            xrDeviceSimulatorObject.SetActive(true);
+
         if (disableLeftInteractorRootInPCMode && leftInteractorRoot != null)
             leftInteractorRoot.SetActive(false);
         else
         {
-            // If not disabling whole root, manually disable left-side interactors/visuals
             if (leftDirectInteractor != null)
                 leftDirectInteractor.enabled = false;
 
@@ -170,11 +192,9 @@ public class XRSimulatorPresentationController : MonoBehaviour
                 leftReticleVisual.SetActive(false);
         }
 
-        // Right root should usually stay active because it is the mouse-like pointer hand
         if (rightInteractorRoot != null)
             rightInteractorRoot.SetActive(keepRightInteractorRootActiveInPCMode);
 
-        // Controller visuals
         if (hideControllerVisualsInPCMode)
         {
             if (leftControllerVisual != null)
@@ -184,7 +204,6 @@ public class XRSimulatorPresentationController : MonoBehaviour
                 rightControllerVisual.SetActive(false);
         }
 
-        // Direct interactors
         if (disableDirectInteractorsInPCMode)
         {
             if (leftDirectInteractor != null)
@@ -194,7 +213,6 @@ public class XRSimulatorPresentationController : MonoBehaviour
                 rightDirectInteractor.enabled = false;
         }
 
-        // Poke interactors
         if (disablePokeInteractorsInPCMode)
         {
             if (leftPokeInteractor != null)
@@ -204,7 +222,6 @@ public class XRSimulatorPresentationController : MonoBehaviour
                 rightPokeInteractor.enabled = false;
         }
 
-        // Left ray fully off
         if (leftRayInteractor != null)
             leftRayInteractor.enabled = false;
 
@@ -217,7 +234,6 @@ public class XRSimulatorPresentationController : MonoBehaviour
         if (leftReticleVisual != null)
             leftReticleVisual.SetActive(false);
 
-        // Right ray is the only active pointer in PC mode
         if (rightRayInteractor != null)
         {
             rightRayInteractor.enabled = true;
@@ -234,3 +250,5 @@ public class XRSimulatorPresentationController : MonoBehaviour
             rightReticleVisual.SetActive(true);
     }
 }
+
+#endif

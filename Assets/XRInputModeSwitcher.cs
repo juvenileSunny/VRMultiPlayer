@@ -1,3 +1,5 @@
+#if UNITY_EDITOR || UNITY_STANDALONE
+
 using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.InputSystem;
@@ -25,16 +27,40 @@ public class XRInputModeSwitcher : MonoBehaviour
     public bool forcePCMode = false;
     public bool forceVRMode = false;
 
+    [Header("Simulator Build Gate")]
+    public bool requireSimulatorObjectActiveForPCMode = true;
+
     void Start()
     {
+        bool simulatorAvailable =
+            xrDeviceSimulatorObject != null &&
+            xrDeviceSimulatorObject.activeInHierarchy;
+
         bool isVR;
 
         if (forcePCMode)
+        {
             isVR = false;
+        }
         else if (forceVRMode)
+        {
             isVR = true;
+        }
         else
-            isVR = XRSettings.isDeviceActive;
+        {
+            bool headsetActive = XRSettings.isDeviceActive;
+
+            // If simulator must be present/active and it is not,
+            // do not switch into PC simulator mode.
+            if (requireSimulatorObjectActiveForPCMode && !headsetActive && !simulatorAvailable)
+            {
+                Debug.Log("XRInputModeSwitcher: No HMD and simulator not active/included, staying in VR-style disabled simulator state.");
+                EnableVRMode();
+                return;
+            }
+
+            isVR = headsetActive;
+        }
 
         if (isVR)
             EnableVRMode();
@@ -98,3 +124,5 @@ public class XRInputModeSwitcher : MonoBehaviour
         }
     }
 }
+
+#endif

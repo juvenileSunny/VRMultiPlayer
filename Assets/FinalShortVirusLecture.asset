@@ -1,0 +1,137 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80a1f2cfa0ad20647bab6ee8a4a9b4f8, type: 3}
+  m_Name: FinalShortVirusLecture
+  m_EditorClassIdentifier: 
+  slides:
+  - title: Welcome
+    content: Welcome To The Biology Lecture
+    slideImage: {fileID: 0}
+  - title: SLide1:Openning
+    content: Hello everyone! Today, we will look at how the immune system detects,
+      responds to, and remembers threats.
+    slideImage: {fileID: 21300000, guid: 6558a0ecc8ec5ec47884211ba066a44e, type: 3}
+  - title: Slide2:Mosquito
+    content: "A mosquito lands on your arm, injects its chemicals into your skin,
+      and begins to feed.\r\n You would not even know it was there, if not for the
+      red lump that appears, accompanied by a telltale itch.\r\nIt is a nuisance,
+      but that bump is also an important signal.\r\n It shows that you are protected
+      by your immune system, your body\u2019s major safeguard against infection,
+      illness, and disease."
+    slideImage: {fileID: 21300000, guid: f70914385122c544bacf46d54909df9e, type: 3}
+  - title: Slides3:Threats
+    content: "This system is a vast network of cells, tissues, and organs that coordinate
+      your body\u2019s defenses against any threats to your health.\r\nWithout it,
+      you would be exposed to billions of bacteria, viruses, and toxins that could
+      make something as minor as a paper cut or a seasonal cold fatal.\r"
+    slideImage: {fileID: 21300000, guid: 318c6d3b32e5b6d4c9f15bda17a7fb9d, type: 3}
+  - title: Slide4:Immune System
+    content: "The immune system relies on millions of defensive white blood cells,
+      also known as leukocytes, that originate in our bone marrow.\r\n These cells
+      migrate into the bloodstream and the lymphatic system, a network of vessels
+      that helps clear bodily toxins and waste.\r\nOur bodies are teeming with leukocytes.\r\n
+      There are between 4,000 and 11,000 in every microliter of blood."
+    slideImage: {fileID: 21300000, guid: c6d68dd52bb51104bade09948004c498, type: 3}
+  - title: 'Slide5: Antigens'
+    content: "As they move around, leukocytes work like security personnel, constantly
+      screening the blood, tissues, and organs for suspicious signs.\r\n This system
+      mainly relies on cues called antigens.\r\n Antigens are molecular traces found
+      on the surface of pathogens and other foreign substances, and they betray the
+      presence of invaders."
+    slideImage: {fileID: 21300000, guid: 0d81d1d2b9ba24749a61a580e8ee0488, type: 3}
+  - title: 'Slide6: Detect Signs'
+    content: "As soon as leukocytes detect these signs, it takes only minutes for
+      the body\u2019s protective immune response to begin.\r\nThreats to our bodies
+      are hugely variable, so the immune response has to be equally adaptable.\r\n
+      That means relying on many different types of leukocytes to tackle threats
+      in different ways."
+    slideImage: {fileID: 21300000, guid: e841b9a6e1f2ed544b327bb088d09a47, type: 3}
+  - title: 'Slide7: Leukocytes'
+    content: "Despite this diversity, leukocytes can be classified into two main
+      cellular groups, and these groups coordinate a two-pronged attack.\r\nFirst,
+      phagocytes help trigger the immune response by sending macrophages and dendritic
+      cells into the blood.\r"
+    slideImage: {fileID: 21300000, guid: 70aefb1bd7560a3428242fe79a96b02c, type: 3}
+  - title: 'Slide8: Phagocytes'
+    content: " As these cells circulate, they destroy any foreign cells they encounter
+      simply by consuming them.\r\nThat process also allows phagocytes to identify
+      the antigens on the invaders they have just ingested.\r\n They then transmit
+      this information to the second major cell group that orchestrates the defense:
+      the lymphocytes."
+    slideImage: {fileID: 21300000, guid: 7a98a591490ec4d488394c8e4dc03d6c, type: 3}
+  - title: 'Slide9: Lymphocytes'
+    content: 'A group of lymphocytes called T cells goes in search of infected body
+      cells and swiftly kills them off.
+
+      Meanwhile, B cells and helper T cells
+      use the information gathered from those unique antigens to begin producing
+      special proteins called antibodies.
+
+'
+    slideImage: {fileID: 21300000, guid: f87eb916c1996f045b3a1c09f257cbd5, type: 3}
+  - title: 'Slide10: Antibody'
+    content: "This is the pi\xE8ce de r\xE9sistance, the key step in the response.\r\n
+      Each antigen has a unique matching antibody that can latch onto it like a lock
+      and key and help destroy the invading cells.\r\nB cells can produce millions
+      of these antibodies.\r\nThey then cycle through the body and attack the invaders
+      until the worst of the threat has been neutralized."
+    slideImage: {fileID: 21300000, guid: d9a348f8a480c084caf7651e63bd1820, type: 3}
+  - title: 'Slide11: Symptoms'
+    content: 'While all of this is going on, familiar symptoms, such as high temperatures
+      and swelling, are actually processes designed to aid the immune response.
+
+      A
+      warmer body makes it harder for bacteria and viruses to reproduce and spread
+      because many of them are temperature-sensitive.
+
+      And when body cells
+      are damaged, they release chemicals that make fluid leak into the surrounding
+      tissues, causing swelling.
+
+      That swelling also attracts phagocytes,
+      which then consume both the invaders and the damaged cells.
+
+      Usually,
+      an immune response will eradicate a threat within a few days.
+
+      It will
+      not always stop you from getting ill, but that is not its only purpose.
+
+      Its
+      actual job is to stop a threat from escalating to dangerous levels inside your
+      body.
+
+'
+    slideImage: {fileID: 21300000, guid: b0f7d0c05a5a2054fbb387879e147f4c, type: 3}
+  - title: 'Slide12: B-T-Cells'
+    content: "And through constant surveillance over time, the immune system provides
+      another major benefit: it helps us develop long-term immunity.\r\nWhen B cells
+      and T cells identify antigens, they can use that information to recognize the
+      same invaders in the future.\r\n So when a threat revisits, those cells can
+      swiftly deploy the right antibodies to tackle it before it affects many more
+      cells.\r\nThat is how you can develop immunity to certain diseases, like chickenpox.\r\n"
+    slideImage: {fileID: 21300000, guid: 6b28fdccf1d165a45a1d7333f6c9e7fe, type: 3}
+  - title: 'Slide13: Healthy Cells'
+    content: "It does not always work perfectly.\r\nSome people have autoimmune diseases,
+      which trick the immune system into attacking the body\u2019s own perfectly
+      healthy cells.\r\n No one knows exactly what causes these conditions, but they
+      sabotage the immune system to varying degrees and underlie disorders such as
+      arthritis, type 1 diabetes, and multiple sclerosis.\r\nFor most individuals,
+      however, a healthy immune system will successfully fight off an estimated 300
+      colds and innumerable other potential infections over the course of a lifetime.\r\nWithout
+      it, those threats would escalate into something far more dangerous.\r\n"
+    slideImage: {fileID: 21300000, guid: f155c8220c26e354d89771a866ccc647, type: 3}
+  - title: 'Slide14: Conclusion'
+    content: "So the next time you catch a cold or scratch a mosquito bite, think
+      of the immune system.\r\n It is working constantly to protect you.\r\nWe owe
+      it our lives.\r\n"
+    slideImage: {fileID: 21300000, guid: 3db5aa5ce6b74284bb199ec9f328a776, type: 3}

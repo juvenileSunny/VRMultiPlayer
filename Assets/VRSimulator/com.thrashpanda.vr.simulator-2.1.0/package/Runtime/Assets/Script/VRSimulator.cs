@@ -9,7 +9,7 @@ using UnityEngine.UI;
  */
 public class VRSimulator : MonoBehaviour
 {
-#if UNITY_EDITOR || VRSim_include_in_build
+#if UNITY_EDITOR || UNITY_STANDALONE || VRSim_include_in_build
     //Variable: xRRigToFollow
     //A Transform the virtual rig will match position and rotation to. Needs to be assigned in order to match the simulated controllers with the XR controllers in the scene.
     [SerializeField]
