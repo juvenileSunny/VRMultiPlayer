@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using System.IO;
 
 [System.Serializable]
 public class BlendShapeTarget
@@ -11,12 +12,16 @@ public class BlendShapeTarget
     [Range(0f, 100f)] public float maxWeight = 10f; // weight in blendshape units (0..100)
     [HideInInspector] public int blendShapeIndex = -1;
 }
-
+[System.Serializable]
+public class TTSConfig
+{
+    public string ttsUrl = "http://127.0.0.1:5005/tts";
+}
 public class SlideTTSAgent : MonoBehaviour
 {
-    [Header("TTS HTTP Endpoint (PC IP, not 127.0.0.1 on Quest)")]
-    public string ttsUrl = "http://192.168.1.25:5005/tts";
-    // public string ttsUrl = "http://arsc-r-2wm6yb4.ddns.uark.edu:5005/tts";
+    [Header("TTS HTTP Endpoint (PC IP, not 127.0.0.1 on Quest, loaded from config.json if exists)")]
+    // public string ttsUrl = "http://192.168.1.25:5005/tts";
+    public string ttsUrl = "http://arsc-r-2wm6yb4.ddns.uark.edu:5005/tts";
 
     [Header("Audio")]
     public AudioSource audioSource;
@@ -38,6 +43,7 @@ public class SlideTTSAgent : MonoBehaviour
 
     void Start()
     {
+        LoadConfig();
         // Cache blendshape indices
         foreach (var target in blendShapeTargets)
         {
@@ -49,6 +55,43 @@ public class SlideTTSAgent : MonoBehaviour
                 if (target.blendShapeIndex < 0)
                     Debug.LogWarning($"[SlideTTSAgent] BlendShape '{target.blendShapeName}' not found on {target.skinnedMesh.name}");
             }
+        }
+    }
+    void LoadConfig()
+    {
+        string path;
+
+        #if UNITY_ANDROID && !UNITY_EDITOR
+        path = Path.Combine(Application.persistentDataPath, "config.json");
+        #else
+        path = Path.Combine(Application.dataPath, "..", "config.json");
+        #endif
+
+        if (File.Exists(path))
+        {
+            try
+            {
+                string json = File.ReadAllText(path);
+                TTSConfig config = JsonUtility.FromJson<TTSConfig>(json);
+
+                if (config != null && !string.IsNullOrWhiteSpace(config.ttsUrl))
+                {
+                    ttsUrl = config.ttsUrl;
+                    Debug.Log("[SlideTTSAgent] Loaded TTS URL from config: " + ttsUrl);
+                }
+                else
+                {
+                    Debug.LogWarning("[SlideTTSAgent] config.json found but ttsUrl was empty. Using Inspector/default value.");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError("[SlideTTSAgent] Failed to read config.json: " + ex.Message);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[SlideTTSAgent] config.json not found. Using Inspector/default value: " + ttsUrl);
         }
     }
 
