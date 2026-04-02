@@ -61,11 +61,11 @@ public class SlideTTSAgent : MonoBehaviour
     {
         string path;
 
-        #if UNITY_ANDROID && !UNITY_EDITOR
+    #if UNITY_ANDROID && !UNITY_EDITOR
         path = Path.Combine(Application.persistentDataPath, "config.json");
-        #else
+    #else
         path = Path.Combine(Application.dataPath, "..", "config.json");
-        #endif
+    #endif
 
         if (File.Exists(path))
         {
@@ -81,7 +81,7 @@ public class SlideTTSAgent : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogWarning("[SlideTTSAgent] config.json found but ttsUrl was empty. Using Inspector/default value.");
+                    Debug.LogWarning("[SlideTTSAgent] config.json found but ttsUrl was empty. Using Inspector/default value: " + ttsUrl);
                 }
             }
             catch (System.Exception ex)
@@ -91,10 +91,24 @@ public class SlideTTSAgent : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[SlideTTSAgent] config.json not found. Using Inspector/default value: " + ttsUrl);
+            Debug.LogWarning("[SlideTTSAgent] config.json not found. Creating one with default URL: " + ttsUrl);
+
+            try
+            {
+                TTSConfig defaultConfig = new TTSConfig();
+                defaultConfig.ttsUrl = ttsUrl;
+
+                string json = JsonUtility.ToJson(defaultConfig, true);
+                File.WriteAllText(path, json);
+
+                Debug.Log("[SlideTTSAgent] Created config at: " + path);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError("[SlideTTSAgent] Failed to create config.json: " + ex.Message);
+            }
         }
     }
-
     void Update()
     {
         if (audioSource != null && audioSource.isPlaying && blendShapeTargets.Count > 0)
