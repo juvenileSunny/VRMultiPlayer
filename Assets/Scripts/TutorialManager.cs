@@ -5,6 +5,8 @@ using UnityEngine.XR;
 using UnityEngine.XR.Management;
 using PanettoneGames.GenEvents;
 using System;
+using System.Linq;
+using DataEcho;
 // using UnityEditor.EditorTools;
 
 public class TutorialManager : MonoBehaviour, IGameEventListener<int>
@@ -139,6 +141,43 @@ public class TutorialManager : MonoBehaviour, IGameEventListener<int>
 
     //This is wha gets checked to see if the tutorial is complete.
     private bool[] eventCompletion;
+
+    private void TryLogTutorialStepEvent(string eventName, TutorialEventIDs stepId, int raisedItem)
+    {
+        try
+        {
+            string stepName = Enum.IsDefined(typeof(TutorialEventIDs), stepId)
+                ? stepId.ToString()
+                : "Unknown";
+
+            string serialNumber = "";
+            try
+            {
+                serialNumber = SessionCollector.Instance != null
+                    ? SessionCollector.Instance.GetSerialNumber()
+                    : "";
+            }
+            catch
+            {
+                serialNumber = "";
+            }
+
+            var data = new Dictionary<string, string>
+            {
+                { "stepId", ((int)stepId).ToString() },
+                { "stepName", stepName },
+                { "raisedItem", raisedItem.ToString() },
+                { "currentMessage", currentMessage.ToString() },
+                { "serialNumber", serialNumber ?? "" }
+            };
+
+            EventsListener.LogEvent(eventName, "Tutorial step completed", data);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"TutorialManager: DataEcho log skipped ({eventName}). {e.Message}");
+        }
+    }
 
 
     void Awake()
@@ -363,6 +402,9 @@ public class TutorialManager : MonoBehaviour, IGameEventListener<int>
             }
         // Otherwise we check if this id requires player input.
         }else if(requirePlayerInput(currentMessage)){
+            // Log completion of the current gated tutorial step before advancing.
+            TryLogTutorialStepEvent("tutorial_step_completed", currentEvent, item);
+
             // Move to next input event event
             currentEvent = GetNextEvent(currentEvent);
             tutorialEvents.Raise(ToastHideID);
@@ -372,6 +414,7 @@ public class TutorialManager : MonoBehaviour, IGameEventListener<int>
         // Once the tutorial is complete we display the final message and set the current even to finished so no more events
         // are sent.
         if(isTutorialComplete()) {
+            TryLogTutorialStepEvent("tutorial_completed", TutorialEventIDs.Finished, item);
             currentEvent = TutorialEventIDs.Finished;
             ToastNotification.Show(currentMessages[eventCount], messageTime+10);
         }
