@@ -12868,7 +12868,7 @@ GameObject:
   - component: {fileID: 705568939}
   - component: {fileID: 705568938}
   - component: {fileID: 705568937}
-  m_Layer: 8
+  m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -26290,7 +26290,7 @@ GameObject:
   - component: {fileID: 1436201641}
   - component: {fileID: 1436201643}
   - component: {fileID: 1436201642}
-  m_Layer: 8
+  m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -29018,7 +29018,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: ce04dfac028cabc448acc6b14c9b515d, type: 3}
+  m_Sprite: {fileID: 21300000, guid: ce559ce465e18e64f8a7fa97853f03b3, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
