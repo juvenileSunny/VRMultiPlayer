@@ -9,6 +9,7 @@ public class PrefabSpawn : NetworkBehaviour
     public TutorialManager tutorialManager;
     public GameObject prefabToSpawn; // Assign in Inspector
     public Transform spawnLocation;  // Optional: set where the prefab should spawn
+    public string lectureSceneName; // Scene to load if skipping tutorial
 
     // This function is responsible for spawning the mind map nodes
     public void SpawnPrefab()
@@ -34,6 +35,18 @@ public class PrefabSpawn : NetworkBehaviour
                 Instantiate(prefabToSpawn, spawnPos, Quaternion.identity);
                 Debug.Log($"Spawned node locally (no network)");
             }
+        }
+    }
+
+    public void SkipTutorialScene()
+    {
+        if (lectureSceneName != null && lectureSceneName != "")
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(lectureSceneName);
+        }
+        else
+        {
+            Debug.LogWarning("Lecture scene name not set in PrefabSpawn component!");
         }
     }
 

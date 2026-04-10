@@ -8,7 +8,7 @@ public class TriggerobjectCount : MonoBehaviour
     public IntEvent tutorialEvents;
     public bool debugMessages = false;
     [Header("Once you hit this count the object will perform its function")]
-    public int targetCount = 3;
+    public int targetCount = 1;
 
     // This will store all objects that enter the trigger area
     private HashSet<Collider> objectsInTrigger = new HashSet<Collider>();
