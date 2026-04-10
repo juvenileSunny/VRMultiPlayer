@@ -25,9 +25,9 @@ MonoBehaviour:
       and begins to feed.\r"
     slideImage: {fileID: 21300000, guid: f70914385122c544bacf46d54909df9e, type: 3}
   - title: Slide2:Mosquito
-    content: " would not even know it was there, if not for the red lump that appears,
-      accompanied by a telltale itch.\r\nIt is a nuisance, but that bump is also
-      an important signal.\r"
+    content: "You would not even know it was there, if not for the red lump that
+      appears, accompanied by a telltale itch.\r\nIt is a nuisance, but that bump
+      is also an important signal.\r"
     slideImage: {fileID: 21300000, guid: f70914385122c544bacf46d54909df9e, type: 3}
   - title: Slide2:Mosquito
     content: "\rIt shows that you are protected by your immune system, your body\u2019s
@@ -38,10 +38,9 @@ MonoBehaviour:
       your body\u2019s defenses against any threats to your health.\r\r"
     slideImage: {fileID: 21300000, guid: 318c6d3b32e5b6d4c9f15bda17a7fb9d, type: 3}
   - title: Slides3:Threats
-    content: "This system is a vast network of cells, tissues, and organs that coordinate
-      your body\u2019s defenses against any threats to your health.\r\nWithout it,
-      you would be exposed to billions of bacteria, viruses, and toxins that could
-      make something as minor as a paper cut or a seasonal cold fatal.\r"
+    content: "\rWithout it, you would be exposed to billions of bacteria, viruses,
+      and toxins that could make something as minor as a paper cut or a seasonal
+      cold fatal.\r"
     slideImage: {fileID: 21300000, guid: 318c6d3b32e5b6d4c9f15bda17a7fb9d, type: 3}
   - title: Slide4:Immune System
     content: "The immune system relies on millions of defensive white blood cells,
@@ -190,7 +189,7 @@ MonoBehaviour:
     content: 'So the next time you catch a cold or scratch a mosquito bite, think
       of the immune system.
 
-      
+
 
 '
     slideImage: {fileID: 21300000, guid: 3db5aa5ce6b74284bb199ec9f328a776, type: 3}
