@@ -1,1 +1,0 @@
-NDSearch.OnPrefixDataLoaded("gri",["Variable"],[["grip",,[["LegacyKeyAssign.InteractionInput",,,,0,"File3:Input/LegacyKeyAssign.cs:LegacyKeyAssign.InteractionInput.grip","CSharpClass:LegacyKeyAssign.InteractionInput:grip"]]]]);

@@ -1,1 +1,0 @@
-NDSearch.OnPrefixDataLoaded("pri",["Variable"],[["primaryButton",,[["LegacyKeyAssign.InteractionInput",,,,0,"File3:Input/LegacyKeyAssign.cs:LegacyKeyAssign.InteractionInput.primaryButton","CSharpClass:LegacyKeyAssign.InteractionInput:primaryButton"]]]]);

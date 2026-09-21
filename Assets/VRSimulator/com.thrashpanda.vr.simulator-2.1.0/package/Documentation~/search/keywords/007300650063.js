@@ -1,1 +1,0 @@
-NDSearch.OnPrefixDataLoaded("sec",["Variable"],[["secondaryButton",,[["LegacyKeyAssign.InteractionInput",,,,0,"File3:Input/LegacyKeyAssign.cs:LegacyKeyAssign.InteractionInput.secondaryButton","CSharpClass:LegacyKeyAssign.InteractionInput:secondaryButton"]]]]);

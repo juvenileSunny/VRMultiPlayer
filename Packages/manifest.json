@@ -30,6 +30,7 @@
     "com.veriorpies.parrelsync": "https://github.com/VeriorPies/ParrelSync.git?path=/ParrelSync",
     "com.whisper.unity": "https://github.com/Macoron/whisper.unity.git?path=/Packages/com.whisper.unity",
     "com.yagizeraslan.deepseek": "https://github.com/yagizeraslan/DeepSeek-Unity.git",
+    "org.khronos.unitygltf": "https://github.com/KhronosGroup/UnityGLTF.git",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
     "com.unity.modules.animation": "1.0.0",

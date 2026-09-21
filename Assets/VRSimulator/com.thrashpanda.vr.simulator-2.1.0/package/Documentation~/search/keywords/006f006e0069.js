@@ -1,1 +1,0 @@
-NDSearch.OnPrefixDataLoaded("oni",["Function"],[["OnInspectorGUI",,[["VRSimulatorInputHandlerEditor",,,,0,"File3:Input/VRSimulatorInputHandler.cs:VRSimulatorInputHandlerEditor.OnInspectorGUI","CSharpClass:VRSimulatorInputHandlerEditor:OnInspectorGUI"]]]]);

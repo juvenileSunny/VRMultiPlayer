@@ -1,1 +1,0 @@
-NDSearch.OnPrefixDataLoaded("pos",["Variable"],[["pos",,[["VRSimulatorController",,,,0,"File3:Script/VRSimulatorController.cs:VRSimulatorController.pos","CSharpClass:VRSimulatorController:pos"],["VRSimulatorHMD",,,,0,"File3:Script/VRSimulatorHMD.cs:VRSimulatorHMD.pos","CSharpClass:VRSimulatorHMD:pos"]]]]);

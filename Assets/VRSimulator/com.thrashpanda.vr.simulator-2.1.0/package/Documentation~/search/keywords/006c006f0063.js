@@ -1,1 +1,0 @@
-NDSearch.OnPrefixDataLoaded("loc",["Variable"],[["lockCursor",,[["VRSimulatorInputHandler",,,,0,"File3:Input/VRSimulatorInputHandler.cs:VRSimulatorInputHandler.lockCursor","CSharpClass:VRSimulatorInputHandler:lockCursor"]]]]);

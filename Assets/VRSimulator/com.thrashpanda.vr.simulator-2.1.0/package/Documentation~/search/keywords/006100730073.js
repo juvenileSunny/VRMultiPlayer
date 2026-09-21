@@ -1,1 +1,0 @@
-NDSearch.OnPrefixDataLoaded("ass",["Variable"],[["assignedKeys",,[["VRSimulatorInputHandler",,,,0,"File3:Input/VRSimulatorInputHandler.cs:VRSimulatorInputHandler.assignedKeys","CSharpClass:VRSimulatorInputHandler:assignedKeys"]]]]);

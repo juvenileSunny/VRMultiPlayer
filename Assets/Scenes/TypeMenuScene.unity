@@ -1953,6 +1953,14 @@ PrefabInstance:
       propertyPath: trackByTagName
       value: MainCamera,PlayerHand
       objectReference: {fileID: 0}
+    - target: {fileID: 4610087516668697060, guid: 2b89bb606d6436d4eadbeaeab6b105dd, type: 3}
+      propertyPath: pendingStoreMaxMB
+      value: 2048
+      objectReference: {fileID: 0}
+    - target: {fileID: 4610087516668697060, guid: 2b89bb606d6436d4eadbeaeab6b105dd, type: 3}
+      propertyPath: trackRenderableChildren
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6166614685206740983, guid: 2b89bb606d6436d4eadbeaeab6b105dd, type: 3}
       propertyPath: m_Name
       value: DataEchoLogger

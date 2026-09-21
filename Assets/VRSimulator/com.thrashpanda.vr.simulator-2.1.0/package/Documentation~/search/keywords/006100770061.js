@@ -1,1 +1,0 @@
-NDSearch.OnPrefixDataLoaded("awa",["Function"],[["Awake",,[["XRPluginInstallerWindow",,,,0,"File:Editor/XRPluginInstallerWindow.cs:XRPluginInstallerWindow.Awake","CSharpClass:XRPluginInstallerWindow:Awake"]]]]);

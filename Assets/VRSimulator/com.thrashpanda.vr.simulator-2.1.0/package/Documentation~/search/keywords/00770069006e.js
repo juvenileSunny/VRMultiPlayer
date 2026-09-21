@@ -1,1 +1,0 @@
-NDSearch.OnPrefixDataLoaded("win",["Variable"],[["window",,[["InitialNote",,,,0,"File:Editor/InitialNote.cs:InitialNote.window","CSharpClass:InitialNote:window"]]]]);

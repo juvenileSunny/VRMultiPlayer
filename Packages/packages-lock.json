@@ -7,7 +7,7 @@
       "dependencies": {
         "com.unity.nuget.newtonsoft-json": "3.2.1"
       },
-      "hash": "62df1c71f569acaf60550c8dddc1836ac373845a"
+      "hash": "70df801e55fd2865a4176aebcd3d0904333fb728"
     },
     "com.meta.xr.mrutilitykit": {
       "version": "85.0.0",
@@ -621,6 +621,21 @@
         "com.unity.textmeshpro": "3.0.6"
       },
       "hash": "b87b1b653dab222b1e7dbd70c78de2f692e3d748"
+    },
+    "org.khronos.unitygltf": {
+      "version": "https://github.com/KhronosGroup/UnityGLTF.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "2.0.0",
+        "com.unity.modules.audio": "1.0.0",
+        "com.unity.modules.imageconversion": "1.0.0",
+        "com.unity.modules.particlesystem": "1.0.0",
+        "com.unity.shadergraph": "10.0.0",
+        "com.unity.mathematics": "1.0.0",
+        "com.unity.collections": "1.0.0"
+      },
+      "hash": "53081b042034ba0fa9a34339f46376e8dd5f9530"
     },
     "com.unity.modules.ai": {
       "version": "1.0.0",

@@ -1,1 +1,0 @@
-NDFramePage.OnPageTitleLoaded("CSharpClass:VectorHelper","VectorHelper");NDSummary.OnSummaryLoaded("CSharpClass:VectorHelper",[["C#","CSharp"]],[["Classes","Class"],["Functions","Function"],["Groups","Group"]],[[145,0,0,"VectorHelper"],[146,0,2,"Functions","Functions"],[147,0,1,"RotatePointAroundPivot","RotatePointAroundPivot"]]);

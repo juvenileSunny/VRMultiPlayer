@@ -1,1 +1,0 @@
-NDSearch.OnPrefixDataLoaded("che",["Function"],[["CheckForPackage",,[["XRPluginInstaller",,,,0,"File:Editor/XRPluginInstaller.cs:XRPluginInstaller.CheckForPackage","CSharpClass:XRPluginInstaller:CheckForPackage"]]]]);

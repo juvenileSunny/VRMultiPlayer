@@ -89508,7 +89508,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8363325312019961060, guid: 09dc757e762684c09903fcada323ce30, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.0063447254
+      value: -0.0021098256
       objectReference: {fileID: 0}
     - target: {fileID: 8554570901202982303, guid: 09dc757e762684c09903fcada323ce30, type: 3}
       propertyPath: m_text
@@ -93783,6 +93783,14 @@ PrefabInstance:
     - target: {fileID: 4610087516668697060, guid: 2b89bb606d6436d4eadbeaeab6b105dd, type: 3}
       propertyPath: trackByTagName
       value: MainCamera,PlayerHand
+      objectReference: {fileID: 0}
+    - target: {fileID: 4610087516668697060, guid: 2b89bb606d6436d4eadbeaeab6b105dd, type: 3}
+      propertyPath: pendingStoreMaxMB
+      value: 2048
+      objectReference: {fileID: 0}
+    - target: {fileID: 4610087516668697060, guid: 2b89bb606d6436d4eadbeaeab6b105dd, type: 3}
+      propertyPath: trackRenderableChildren
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6166614685206740983, guid: 2b89bb606d6436d4eadbeaeab6b105dd, type: 3}
       propertyPath: m_Name
