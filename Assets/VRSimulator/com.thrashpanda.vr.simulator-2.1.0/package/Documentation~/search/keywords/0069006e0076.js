@@ -1,0 +1,1 @@
+NDSearch.OnPrefixDataLoaded("inv",["Variable"],[["invertYAxis",,[["VRSimulatorInputHandler",,,,0,"File3:Input/VRSimulatorInputHandler.cs:VRSimulatorInputHandler.invertYAxis","CSharpClass:VRSimulatorInputHandler:invertYAxis"]]]]);

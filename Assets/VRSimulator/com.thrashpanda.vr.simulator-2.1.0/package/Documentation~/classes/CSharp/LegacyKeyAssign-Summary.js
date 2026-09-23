@@ -1,0 +1,1 @@
+NDFramePage.OnPageTitleLoaded("CSharpClass:LegacyKeyAssign","LegacyKeyAssign");NDSummary.OnSummaryLoaded("CSharpClass:LegacyKeyAssign",[["C#","CSharp"]],[["Classes","Class"]],[[96,0,0,"LegacyKeyAssign"]]);
